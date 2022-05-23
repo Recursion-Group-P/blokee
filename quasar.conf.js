@@ -9,6 +9,7 @@
 // https://v1.quasar.dev/quasar-cli/quasar-conf-js
 
 const ESLintPlugin = require('eslint-webpack-plugin')
+const envparser = require('./envparser')
 
 module.exports = function (/* ctx */) {
   return {
@@ -22,8 +23,7 @@ module.exports = function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v1.quasar.dev/quasar-cli/boot-files
     boot: [
-      
-      
+      'firebase.js',
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -47,6 +47,7 @@ module.exports = function (/* ctx */) {
 
     // Full list of options: https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
+      env: envparser(),
       vueRouterMode: 'hash', // available values: 'hash', 'history'
 
       // transpile: false,
