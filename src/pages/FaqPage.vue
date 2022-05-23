@@ -16,7 +16,7 @@
         <q-tab-panels v-model="tab" animated>
           <q-tab-panel name="game-rules">
             <div v-for="rule in gameRules" :key="rule.ruleId">
-              <div class="text-h5 text-blue-5">{{ rule.heading }}</div>
+              <div class="text-h5 text-blue-5 q-py-sm">{{ rule.heading }}</div>
               <div v-for="d in rule.details" :key="d">
                 <p>{{ d }}</p>
               </div>
