@@ -1,34 +1,55 @@
 <template>
-  <div class="q-pa-md doc-container">
-    <!-- Left  -->
-    <div class="row" style="height: 400px">
-      <div class="col">
-        <div class="row items-start bg-red-3" style="height: 200px">
-          <div class="col">left top</div>
-        </div>
-        <div class="row items-end bg-green-3" style="height: 200px">
-          <div class="col">left bottom</div>
-        </div>
-      </div>
-
-      <!-- Main  -->
-      <div class="col-6 bg-grey-3">main</div>
-
-      <!-- Right  -->
-      <div class="col bg-green-3">
-        <div class="row items-start bg-yellow-3" style="height: 200px">
-          <div class="col">right top</div>
-        </div>
-        <div class="row items-end bg-blue-3" style="height: 200px">
-          <div class="col">right bottom</div>
-        </div>
-      </div>
+  <div>
+    <!-- timer -->
+    <div class="row" style="height: 100px">
+      <q-card class="full-width bg-grey-3">
+        <q-card-section>
+          <p>Timer</p>
+        </q-card-section>
+      </q-card>
     </div>
+
+    <!-- user piece card 1 -->
+    <!-- <div class="col">// <piece-selector :userColor="red" /></div> -->
+
+    <!-- board -->
+    <div class="col">
+      <canvas ref="canvasRef" width="421" height="421" />
+    </div>
+
+    <!-- user piece card 2 -->
+    <!-- <div class="col">// <piece-selector :userColor="blue" /></div> -->
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  mounted() {
+    const context = this.$refs.canvasRef.getContext("2d");
+    if (context !== null) {
+      this.draw(context);
+    }
+  },
+  methods: {
+    draw(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      ctx.beginPath();
+      for (let x = 0; x <= 14 * 30; x += 30) {
+        ctx.moveTo(0.5 + x, 0);
+        ctx.lineTo(0.5 + x, 14 * 30);
+      }
+
+      for (let x = 0; x <= 14 * 30; x += 30) {
+        ctx.moveTo(0, 0.5 + x);
+        ctx.lineTo(14 * 30, 0.5 + x);
+      }
+
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+    },
+  },
+};
 </script>
 
 <style></style>
