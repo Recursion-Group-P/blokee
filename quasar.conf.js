@@ -9,9 +9,11 @@
 // https://v1.quasar.dev/quasar-cli/quasar-conf-js
 
 const ESLintPlugin = require('eslint-webpack-plugin')
-const envparser = require('./src/config/envparser')
+// const envparser = require('./src/config/envparser')
+
 
 module.exports = function (/* ctx */) {
+  require('dotenv').config()
   return {
     // https://v1.quasar.dev/quasar-cli/supporting-ts
     supportTS: false,
