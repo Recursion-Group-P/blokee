@@ -1,29 +1,33 @@
 <template>
-  <div>
+  <div class="row">
     <!-- timer -->
-    <div class="row" style="height: 100px">
+    <!-- <div class="row" style="height: 100px">
       <q-card class="full-width bg-grey-3">
         <q-card-section>
           <p>Timer</p>
         </q-card-section>
       </q-card>
-    </div>
+    </div> -->
 
     <!-- user piece card 1 -->
-    <!-- <div class="col">// <piece-selector :userColor="red" /></div> -->
+    <div class="col-3"><player-area /></div>
 
     <!-- board -->
-    <div class="col">
+    <div class="col-6">
       <canvas ref="canvasRef" width="421" height="421" />
     </div>
 
     <!-- user piece card 2 -->
-    <!-- <div class="col">// <piece-selector :userColor="blue" /></div> -->
+    <div class="col-3"><player-area /></div>
   </div>
 </template>
 
 <script>
+import PlayerArea from "src/components/PlayerArea.vue";
 export default {
+  components: {
+    "player-area": PlayerArea,
+  },
   mounted() {
     const context = this.$refs.canvasRef.getContext("2d");
     if (context !== null) {
