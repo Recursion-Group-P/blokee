@@ -21,6 +21,7 @@
 
 <script>
   import { Config } from "../config/index";
+  import { mapActions } from 'vuex';
   export default {
     name: "SettingsPage",
     data() {
@@ -34,10 +35,9 @@
       };
     },
     methods: {
+      ...mapActions('game', ['setGameSettings']),
       gameStart() {
-        console.log(this.numberOfPlayers);
-        console.log(this.timeForEachPlayer);
-        console.log(this.startPosition);
+          this.setGameSettings({ numberOfPlayers: this.numberOfPlayers, timeForEachPlayer: this.timeForEachPlayer, startPosition: this.startPosition });
       },
     },
   };

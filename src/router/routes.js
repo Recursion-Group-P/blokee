@@ -20,6 +20,7 @@ const routes = [
         name: 'room',
         component: () => import("pages/RoomPage.vue"),
         meta: { requiresAuth: true },
+        props:true,
       },
       {
         path: "/faq",
