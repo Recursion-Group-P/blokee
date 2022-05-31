@@ -34,8 +34,13 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
-  props: ["initialPieces", "selectedPieceId", "playerId", "pieceColors"],
+  props: ['selectedPieceId', 'playerId'],
+  computed: {
+    ...mapGetters('game', ['players']),
+  },
   data() {
     return {
       cellSize: 30,
@@ -48,41 +53,60 @@ export default {
     // Draw the selected piece
     drawPiece(pieceCoordinate, flip = false, rotateDirection = null) {
       let canvas = this.$refs.canvas;
-      let ctx = canvas.getContext("2d");
-      ctx.fillStyle = this.pieceColors[this.playerId - 1];
+      let ctx = canvas.getContext('2d');
+      ctx.fillStyle = this.players[this.playerId].color;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2.5;
+
       // Clear drawing
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       // Flip
       if (flip === true) {
         ctx.translate(150, 75);
         ctx.scale(-1, 1);
         ctx.translate(-150, -75);
       }
+
       // Rotate
       if (rotateDirection !== null) {
-        if (rotateDirection === "cw") {
+        if (rotateDirection === 'cw') {
           ctx.translate(150, 75);
           ctx.rotate((90 * Math.PI) / 180);
           ctx.translate(-150, -75);
         }
-        if (rotateDirection === "ccw") {
+        if (rotateDirection === 'ccw') {
           ctx.translate(150, 75);
           ctx.rotate((-90 * Math.PI) / 180);
           ctx.translate(-150, -75);
         }
       }
+
       // Draw center piece
       ctx.fillRect(
-        this.startDrawCoordinate["x"],
-        this.startDrawCoordinate["y"],
+        this.startDrawCoordinate['x'],
+        this.startDrawCoordinate['y'],
         this.cellSize,
         this.cellSize
       );
+      ctx.strokeRect(
+        this.startDrawCoordinate['x'],
+        this.startDrawCoordinate['y'],
+        this.cellSize,
+        this.cellSize
+      );
+
       // Draw other piece
       for (let i = 0; i < pieceCoordinate.length; i++) {
         ctx.fillRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate["x"],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate["y"],
+          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
+          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          this.cellSize,
+          this.cellSize
+        );
+        ctx.strokeRect(
+          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
+          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
@@ -94,9 +118,9 @@ export default {
       const otherCoordinates = [];
       for (let i = 0; i < splitByBreakLine.length; i++) {
         for (let j = 0; j < splitByBreakLine[i].length; j++) {
-          if (splitByBreakLine[i][j] == "C") {
+          if (splitByBreakLine[i][j] == 'C') {
             centerCoordinate = [i, j];
-          } else if (splitByBreakLine[i][j] == "O") {
+          } else if (splitByBreakLine[i][j] == 'O') {
             otherCoordinates.push([i, j]);
           }
         }
@@ -116,25 +140,20 @@ export default {
       this.drawPiece(this.pieceCoordinate, flip);
     },
     turnPiece90DegreeClockwise() {
-      let rotateDirection = "cw"; // cw stands for "clock wise"
+      let rotateDirection = 'cw'; // cw stands for "clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
     },
     turnPiece90DegreeCounterClockwise() {
-      let rotateDirection = "ccw"; // cw stands for "counter clock wise"
+      let rotateDirection = 'ccw'; // cw stands for "counter clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
     },
     cancelPiece(e) {
-      this.$emit("cancel-piece", e.currentTarget.getAttribute("data-selected-piece-id"));
+      this.$emit('cancel-piece', e.currentTarget.getAttribute('data-selected-piece-id'));
     },
   },
   mounted() {
-    let pieceCoordinate = this.getCoordinatesFromCenter(
-      this.initialPieces[this.selectedPieceId]
-    );
-    // Store piece coordinate in data
-    this.pieceCoordinate = pieceCoordinate;
-    // Draw piece
-    this.drawPiece(pieceCoordinate);
+    this.pieceCoordinate = this.players[this.playerId].remainingPieces[this.selectedPieceId];
+    this.drawPiece(this.pieceCoordinate);
   },
 };
 </script>

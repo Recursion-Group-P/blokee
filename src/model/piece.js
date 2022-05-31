@@ -51,11 +51,9 @@ function getAllPieces(pieces) {
 }
 
 export const allPiecesCoordinates = getAllPieces(PIECES);
-export const allPiecesStates = Object.entries(allPiecesCoordinates).map(function([i, ]) {
-  return {pieceId: parseInt(i), direction: 0};
-})
-
-
+export const allPiecesStates = Object.entries(allPiecesCoordinates).map(function ([i]) {
+    return { pieceId: parseInt(i), direction: 0 };
+});
 
 // horizontal flip
 
@@ -70,10 +68,6 @@ export const allPiecesStates = Object.entries(allPiecesCoordinates).map(function
 // flipPairs.includes(somePiece.direction => 0);
 // matchedPair = [0,4]
 // if direction == matchedPair[0] ? matchedPair[1] : matchedPair[0];
-
-
-
-
 
 // allPiecesCoordinates
 // [
@@ -99,7 +93,6 @@ export const allPiecesStates = Object.entries(allPiecesCoordinates).map(function
 //     [[-1, 0], [0, -1], [0, 1], [1, 0]],
 //     [[-1, 0], [0, -1], [0, 1], [0, 2]]
 // ]
-
 
 // [
 // { pieceId: 0, direction: 0}
