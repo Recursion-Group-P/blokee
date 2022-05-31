@@ -1,14 +1,14 @@
 <template>
+  <div class="row wrap room">
 
   <div>
-    <!-- timer -->
-    <!-- <div class="row" style="height: 100px">
-      <q-card class="full-width bg-grey-3">
-        <q-card-section>
-          <p>Timer</p>
-        </q-card-section>
-      </q-card>
-    </div> -->
+    <!-- board -->
+    <div class="board">
+      <canvas ref="canvasRef" width="421" height="421" />
+    </div>
+
+    <div class="col-6" v-for="playerId of this.numOfPlayers" :key="playerId">
+      <player-area :player-id="playerId" :piece-colors="pieceColors" />
 
     <div class="row items-center" style="height: calc(100vh - 50px)">
 
@@ -60,8 +60,12 @@
 </template>
 
 <script>
-  import { mapGetters } from 'vuex'
-  export default {
+import PlayerArea from "src/components/PlayerArea.vue";
+import { mapGetters } from 'vuex'
+export default {
+    components: {
+      "player-area": PlayerArea,
+    },
     computed:{
       ...mapGetters('game', ['timeForEachPlayer', 'numberOfPlayers', 'boardSettings', 'currentPlayerIndex']),
     },
@@ -73,7 +77,10 @@
     },
     data() {
       return {
-      }
+        numOfPlayers: 4,
+        currentPlayer: null,
+        pieceColors: ["#448DD7", "#F48989", "#9FD782", "#FFDF54"],
+      };
     },
     methods: {
       draw(ctx) {
@@ -100,8 +107,14 @@
   };
 </script>
 
-<style>
-  /* #boardArea {
-    height: calc(100vh - 75px);
-  } */
+<style scoped>
+.room {
+  position: relative;
+}
+.board {
+  position: absolute;
+  top: 5%;
+  left: 28%;
+  /* width: 50%; */
+}
 </style>
