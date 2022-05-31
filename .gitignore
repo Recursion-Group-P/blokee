@@ -34,3 +34,6 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+.env
+production.env
