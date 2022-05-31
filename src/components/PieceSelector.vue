@@ -14,7 +14,7 @@
 
 <script>
 export default {
-  props: ["initialPieces"],
+  props: ["initialPieces", "playerId", "pieceColors"],
   data() {
     return {
       pieces: this.initialPieces,
@@ -27,6 +27,7 @@ export default {
     drawPiece(canvasId, pieceCoordinate) {
       let canvas = this.$refs[canvasId][0];
       let ctx = canvas.getContext("2d");
+      ctx.fillStyle = this.pieceColors[this.playerId - 1];
       // Draw center piece
       ctx.fillRect(
         this.startDrawCoordinate["x"],

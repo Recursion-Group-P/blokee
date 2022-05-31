@@ -1,5 +1,5 @@
 <template>
-  <div class="row">
+  <div class="row wrap room">
     <!-- timer -->
     <!-- <div class="row" style="height: 100px">
       <q-card class="full-width bg-grey-3">
@@ -9,16 +9,14 @@
       </q-card>
     </div> -->
 
-    <!-- user piece card 1 -->
-    <div class="col-3"><player-area /></div>
-
     <!-- board -->
-    <div class="col-6">
+    <div class="board">
       <canvas ref="canvasRef" width="421" height="421" />
     </div>
 
-    <!-- user piece card 2 -->
-    <div class="col-3"><player-area /></div>
+    <div class="col-6" v-for="playerId of this.numOfPlayers" :key="playerId">
+      <player-area :player-id="playerId" :piece-colors="pieceColors" />
+    </div>
   </div>
 </template>
 
@@ -28,6 +26,14 @@ export default {
   components: {
     "player-area": PlayerArea,
   },
+  data() {
+    return {
+      numOfPlayers: 4,
+      currentPlayer: null,
+      pieceColors: ["#448DD7", "#F48989", "#9FD782", "#FFDF54"],
+    };
+  },
+
   mounted() {
     const context = this.$refs.canvasRef.getContext("2d");
     if (context !== null) {
@@ -56,4 +62,14 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.room {
+  position: relative;
+}
+.board {
+  position: absolute;
+  top: 5%;
+  left: 28%;
+  /* width: 50%; */
+}
+</style>

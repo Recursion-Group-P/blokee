@@ -1,22 +1,29 @@
 <template>
-  <div class="rounded-borders shadow-1 q-ma-md q-pa-md">
-    <div class="row justify-between items-center">
-      <h5 class="q-ma-sm">Player 1</h5>
+  <div
+    class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area"
+    :class="[playerId % 2 === 0 ? 'float-right' : '']"
+  >
+    <div class="row justify-between" style="height: 35px">
+      <h6 class="q-ma-none">Player {{ this.playerId }}</h6>
       <div class="q-mb-md row">
-        <q-icon name="timer"></q-icon>
-        <p>{{ formatTime }}</p>
+        <q-icon name="timer" size="1.5rem"></q-icon>
+        <h6 class="q-ma-none">{{ formatTime }}</h6>
       </div>
     </div>
     <piece-selector
       @select-piece="selectPiece"
       v-if="selectedPieceId == -1"
       :initial-pieces="initialPieces"
+      :player-id="playerId"
+      :piece-colors="pieceColors"
     />
     <piece-alter
       @cancel-piece="selectPiece"
       v-else
       :initial-pieces="initialPieces"
       :selected-piece-id="selectedPieceId"
+      :player-id="playerId"
+      :piece-colors="pieceColors"
     />
   </div>
 </template>
@@ -24,11 +31,13 @@
 <script>
 import PieceAlter from "./PieceAlter.vue";
 import PieceSelector from "./PieceSelector.vue";
-export default {
+import Vue from "vue";
+export default Vue.extend({
   components: {
     "piece-alter": PieceAlter,
     "piece-selector": PieceSelector,
   },
+  props: ["playerId", "pieceColors"],
   data() {
     return {
       // For timer
@@ -86,72 +95,15 @@ export default {
     selectPiece(e) {
       this.selectedPieceId = e;
     },
-    // cancelPiece(e) {
-    //   this.selectedPieceId = e;
-    // },
-    // // for pieces
-    // drawPiece(canvasId, pieceCoordinate) {
-    //   let canvas = this.$refs[canvasId][0];
-    //   let ctx = canvas.getContext("2d");
-    //   // Draw center piece
-    //   ctx.fillRect(
-    //     this.startDrawCoordinate["x"],
-    //     this.startDrawCoordinate["y"],
-    //     this.cellSize,
-    //     this.cellSize
-    //   );
-    //   // Draw other piece
-    //   for (let i = 0; i < pieceCoordinate.length; i++) {
-    //     ctx.fillRect(
-    //       pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate["x"],
-    //       pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate["y"],
-    //       this.cellSize,
-    //       this.cellSize
-    //     );
-    //   }
-    // },
-    // getCoordinatesFromCenter(array) {
-    //   let centerCoordinate = null;
-    //   const otherCoordinates = [];
-    //   for (let i = 0; i < array.length; i++) {
-    //     for (let j = 0; j < array[i].length; j++) {
-    //       if (array[i][j] == "C") {
-    //         centerCoordinate = [i, j];
-    //       } else if (array[i][j] == "O") {
-    //         otherCoordinates.push([i, j]);
-    //       }
-    //     }
-    //   }
-
-    //   return otherCoordinates.map((coordPair) => [
-    //     coordPair[0] - centerCoordinate[0],
-    //     coordPair[1] - centerCoordinate[1],
-    //   ]);
-    // },
-    // getAllPieces(pieces) {
-    //   const allPieceCoordinates = [];
-    //   for (let key in pieces) {
-    //     allPieceCoordinates.push(this.getCoordinatesFromCenter(pieces[key].split(/\n/)));
-    //   }
-
-    //   return allPieceCoordinates;
-    // },
   },
-  //   mounted() {
-  //     let pieceCoordinate = this.getAllPieces(this.pieces);
-  //     for (let key in pieceCoordinate) {
-  //       this.drawPiece("canvas" + key, pieceCoordinate[key]);
-  //     }
-  // this.pieceRemaining.forEach((pieceId) => {
-  //   this.drawPiece("canvas" + pieceId);
-  // });
-  //   },
-  // mounted() {
-  //   this.pieceRemaining.forEach({pieceId}) => {
-  //       this.$refs[pieceId]
-  //       this.drawPiece()
-  // },
-};
+});
 </script>
 
-<style lang="sass" scoped></style>
+<style scoped>
+.player-area {
+  width: 50%;
+}
+.float-right {
+  float: right;
+}
+</style>

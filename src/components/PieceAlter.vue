@@ -35,7 +35,7 @@
 
 <script>
 export default {
-  props: ["initialPieces", "selectedPieceId"],
+  props: ["initialPieces", "selectedPieceId", "playerId", "pieceColors"],
   data() {
     return {
       cellSize: 30,
@@ -49,6 +49,7 @@ export default {
     drawPiece(pieceCoordinate, flip = false, rotateDirection = null) {
       let canvas = this.$refs.canvas;
       let ctx = canvas.getContext("2d");
+      ctx.fillStyle = this.pieceColors[this.playerId - 1];
       // Clear drawing
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       // Flip
@@ -111,8 +112,6 @@ export default {
 
     // Alter piece
     flipPiece() {
-      // this.isFlipped = !this.isFlipped;
-      // console.log(this.isFlipped);
       let flip = true;
       this.drawPiece(this.pieceCoordinate, flip);
     },
