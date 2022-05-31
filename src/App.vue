@@ -10,15 +10,7 @@ import { mapActions, mapState } from "vuex";
 
 export default {
   computed: {
-    ...mapState(['auth'])
-  },
-
-  methods: {
-    ...mapActions("auth", ["onAuth"]),
-  },
-
-  created() {
-    this.onAuth();
+    ...mapState(["auth"]),
   },
 };
 </script>

@@ -38,9 +38,12 @@ export default {
             'numberOfPlayers',
             'boardSettings',
             'currentPlayerIndex',
+            'players',
         ]),
     },
     mounted() {
+        console.log(this.players);
+
         const context = this.$refs.canvasRef.getContext('2d');
         if (context !== null) {
             this.draw(context);

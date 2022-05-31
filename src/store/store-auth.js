@@ -37,6 +37,7 @@ const actions = {
   login: async function ({ commit }) {
     try {
       const res = await signInWithPopup(getAuth(), provider);
+      this.$router.push({ name: "settings" });
       commit("setError", null);
     } catch (error) {
       commit("setError", error);
@@ -46,7 +47,7 @@ const actions = {
   logout: function ({ commit }) {
     try {
       signOut(getAuth());
-      this.$router.push({ name: 'home' }).catch((err) => {})
+      this.$router.push({ name: "home" }).catch((err) => {});
       commit("setError", null);
     } catch (error) {
       commit("setError", error);
@@ -54,21 +55,19 @@ const actions = {
   },
 
   onAuth: function ({ commit }) {
-    onAuthStateChanged(getAuth(), (user) => {
-      let userData = {};
-      if (user) {
-        const { displayName, photoURL } = user;
-        userData = { displayName, photoURL };
-      }
-
-      commit("setUser", user ? userData : null);
-      commit("setLoggedIn", user ? true : false);
-
-      if (user) {
-        this.$router.push({ name: 'settings' }).catch((err) => {})
-      }
-
-      commit("setAuthIsReady", true);
+    return new Promise((resolve) => {
+      onAuthStateChanged(getAuth(), (user) => {
+        let userData = {};
+        if (user) {
+          const { displayName, photoURL } = user;
+          userData = { displayName, photoURL };
+        }
+        
+        commit("setUser", user ? userData : null);
+        commit("setLoggedIn", user ? true : false);
+        commit("setAuthIsReady", true);
+        resolve();
+      });
     });
   },
 };
