@@ -112,27 +112,6 @@ export default {
         );
       }
     },
-    getCoordinatesFromCenter(array) {
-      let splitByBreakLine = array.split(/\n/);
-      let centerCoordinate = null;
-      const otherCoordinates = [];
-      for (let i = 0; i < splitByBreakLine.length; i++) {
-        for (let j = 0; j < splitByBreakLine[i].length; j++) {
-          if (splitByBreakLine[i][j] == 'C') {
-            centerCoordinate = [i, j];
-          } else if (splitByBreakLine[i][j] == 'O') {
-            otherCoordinates.push([i, j]);
-          }
-        }
-      }
-
-      let pieceCoodinate = otherCoordinates.map((coordPair) => [
-        coordPair[0] - centerCoordinate[0],
-        coordPair[1] - centerCoordinate[1],
-      ]);
-
-      return pieceCoodinate;
-    },
 
     // Alter piece
     flipPiece() {

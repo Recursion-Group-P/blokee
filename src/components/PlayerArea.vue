@@ -66,17 +66,11 @@ export default Vue.extend({
       this.selectedPieceId = e;
     },
   },
-  mounted() {
-    console.log('mounted' + this.playerId)
-  }
 });
 </script>
 
 <style scoped>
 .player-area {
   width: 50%;
-}
-.float-right {
-  float: right;
 }
 </style>
