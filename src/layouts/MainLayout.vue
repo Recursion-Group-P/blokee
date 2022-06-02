@@ -40,7 +40,7 @@
       </q-tabs>
     </q-footer>
 
-    <q-drawer
+    <!-- <q-drawer
       v-model="leftDrawerOpen"
       :breakpoint="767"
       :width="250"
@@ -69,7 +69,7 @@
           </q-item-section>
         </q-item>
       </q-list>
-    </q-drawer>
+    </q-drawer> -->
 
     <q-page-container>
       <router-view />

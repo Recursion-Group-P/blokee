@@ -26,15 +26,15 @@
           @click="cancelPiece"
         />
       </div>
-      <div class="bg-grey-2 rounded-borders q-pa-sm">
-        <canvas ref="canvas"></canvas>
+      <div class="bg-grey-2 rounded-borders q-pa-sm flex justify-center">
+        <canvas class="cursor-pointer" ref="canvas" @click="handleSelectPiece"></canvas>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   props: ['selectedPieceId', 'playerId'],
@@ -50,12 +50,29 @@ export default {
     };
   },
   methods: {
+    ...mapActions('game', ['setCurrentPlayerSelectedPieceId']),
+
+    handleSelectPiece() {
+      this.setCurrentPlayerSelectedPieceId({
+        currentPlayerId: this.playerId,
+        selectedPieceId: this.selectedPieceId,
+      });
+    },
+
+    cancelPiece(e) {
+      this.setCurrentPlayerSelectedPieceId({
+        currentPlayerId: this.playerId,
+        selectedPieceId: -1,
+      });
+      this.$emit('cancel-piece', e.currentTarget.getAttribute('data-selected-piece-id'));
+    },
+
     // Draw the selected piece
     drawPiece(pieceCoordinate, flip = false, rotateDirection = null) {
       let canvas = this.$refs.canvas;
       let ctx = canvas.getContext('2d');
       ctx.fillStyle = this.players[this.playerId].color;
-      ctx.strokeStyle = '#000';
+      ctx.strokeStyle = 'white';
       ctx.lineWidth = 2.5;
 
       // Clear drawing
@@ -125,9 +142,6 @@ export default {
     turnPiece90DegreeCounterClockwise() {
       let rotateDirection = 'ccw'; // cw stands for "counter clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
-    },
-    cancelPiece(e) {
-      this.$emit('cancel-piece', e.currentTarget.getAttribute('data-selected-piece-id'));
     },
   },
   mounted() {

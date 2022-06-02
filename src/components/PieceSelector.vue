@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-grey-2 rounded-borders q-pa-sm">
+  <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
     <canvas
       v-for="(piece, idx) in players[playerId].remainingPieces"
       :key="idx"
@@ -32,7 +32,7 @@ export default {
       let canvas = this.$refs[canvasId][0];
       let ctx = canvas.getContext('2d');
       ctx.fillStyle = this.players[this.playerId].color;
-      ctx.strokeStyle = '#000';
+      ctx.strokeStyle = 'white';
       ctx.lineWidth = 3;
 
       // Draw center piece

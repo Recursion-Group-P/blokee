@@ -36,6 +36,9 @@ const mutations = {
   setPlayers(state, payload) {
     state.players = payload;
   },
+  setCurrentPlayerSelectedPieceId(state, payload) {
+    state.players[payload.currentPlayerId].selectedPieceId = parseInt(payload.selectedPieceId);
+  },
 };
 
 const actions = {
@@ -84,6 +87,10 @@ const actions = {
       numberOfPlayers: numberOfPlayers,
       timeForEachPlayer: timeForEachPlayer,
     });
+  },
+
+  setCurrentPlayerSelectedPieceId({ commit }, { currentPlayerId, selectedPieceId }) {
+    commit('setCurrentPlayerSelectedPieceId', { currentPlayerId, selectedPieceId });
   },
 };
 
