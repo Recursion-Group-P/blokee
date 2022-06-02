@@ -26,36 +26,39 @@
           @click="cancelPiece"
         />
       </div>
-      <div class="bg-grey-2 rounded-borders q-pa-sm">
-        <canvas ref="canvas"></canvas>
+      <div class="bg-grey-2 rounded-borders q-pa-sm row justify-center">
+        <canvas ref="canvas" width="250" height="250"></canvas>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
-  props: ['selectedPieceId', 'playerId'],
+  props: ["selectedPieceId", "playerId"],
   computed: {
-    ...mapGetters('game', ['players']),
+    ...mapGetters("game", ["players"]),
   },
   data() {
     return {
       cellSize: 30,
-      startDrawCoordinate: { x: 135, y: 60 }, // 150-(30/2), 75-(30/2)
+      startDrawCoordinate: { x: 110, y: 110 },
       pieceCoordinate: null,
       isFlipped: false,
+      currentDegree: 0,
     };
   },
   methods: {
+    ...mapActions("game", ["updatePieceCoordinate"]),
     // Draw the selected piece
     drawPiece(pieceCoordinate, flip = false, rotateDirection = null) {
       let canvas = this.$refs.canvas;
-      let ctx = canvas.getContext('2d');
+      let ctx = canvas.getContext("2d");
       ctx.fillStyle = this.players[this.playerId].color;
-      ctx.strokeStyle = '#000';
+      ctx.strokeStyle = "#000";
       ctx.lineWidth = 2.5;
 
       // Clear drawing
@@ -63,35 +66,36 @@ export default {
 
       // Flip
       if (flip === true) {
-        ctx.translate(150, 75);
-        ctx.scale(-1, 1);
-        ctx.translate(-150, -75);
+        ctx.translate(125, 125);
+        if (this.currentDegree === 0 || this.currentDegree === 180) ctx.scale(-1, 1);
+        if (this.currentDegree === 90 || this.currentDegree === 270) ctx.scale(1, -1);
+        ctx.translate(-125, -125);
       }
 
       // Rotate
       if (rotateDirection !== null) {
-        if (rotateDirection === 'cw') {
-          ctx.translate(150, 75);
+        if (rotateDirection === "cw") {
+          ctx.translate(125, 125);
           ctx.rotate((90 * Math.PI) / 180);
-          ctx.translate(-150, -75);
+          ctx.translate(-125, -125);
         }
-        if (rotateDirection === 'ccw') {
-          ctx.translate(150, 75);
+        if (rotateDirection === "ccw") {
+          ctx.translate(125, 125);
           ctx.rotate((-90 * Math.PI) / 180);
-          ctx.translate(-150, -75);
+          ctx.translate(-125, -125);
         }
       }
 
       // Draw center piece
       ctx.fillRect(
-        this.startDrawCoordinate['x'],
-        this.startDrawCoordinate['y'],
+        this.startDrawCoordinate["x"],
+        this.startDrawCoordinate["y"],
         this.cellSize,
         this.cellSize
       );
       ctx.strokeRect(
-        this.startDrawCoordinate['x'],
-        this.startDrawCoordinate['y'],
+        this.startDrawCoordinate["x"],
+        this.startDrawCoordinate["y"],
         this.cellSize,
         this.cellSize
       );
@@ -99,14 +103,14 @@ export default {
       // Draw other piece
       for (let i = 0; i < pieceCoordinate.length; i++) {
         ctx.fillRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate["x"],
+          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate["y"],
           this.cellSize,
           this.cellSize
         );
         ctx.strokeRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate["x"],
+          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate["y"],
           this.cellSize,
           this.cellSize
         );
@@ -117,21 +121,39 @@ export default {
     flipPiece() {
       let flip = true;
       this.drawPiece(this.pieceCoordinate, flip);
+      // Update isFlipped
+      this.isFlipped = !this.isFlipped;
     },
     turnPiece90DegreeClockwise() {
-      let rotateDirection = 'cw'; // cw stands for "clock wise"
+      let rotateDirection = "cw"; // cw stands for "clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
+      // Update currentDegree
+      this.currentDegree += 90;
+      if (this.currentDegree == 360) this.currentDegree = 0;
     },
     turnPiece90DegreeCounterClockwise() {
-      let rotateDirection = 'ccw'; // cw stands for "counter clock wise"
+      let rotateDirection = "ccw"; // cw stands for "counter clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
+      // Update currentDegree
+      this.currentDegree -= 90;
+      if (this.currentDegree < 0) this.currentDegree = 360 + this.currentDegree;
     },
+
+    // Cancel piece
     cancelPiece(e) {
-      this.$emit('cancel-piece', e.currentTarget.getAttribute('data-selected-piece-id'));
+      this.updatePieceCoordinate({
+        playerId: this.playerId,
+        selectedPieceId: this.selectedPieceId,
+        isFlipped: this.isFlipped,
+        currentDegree: this.currentDegree,
+      });
+      this.$emit("cancel-piece", e.currentTarget.getAttribute("data-selected-piece-id"));
     },
   },
   mounted() {
-    this.pieceCoordinate = this.players[this.playerId].remainingPieces[this.selectedPieceId];
+    this.pieceCoordinate = this.players[this.playerId].remainingPieces[
+      this.selectedPieceId
+    ];
     this.drawPiece(this.pieceCoordinate);
   },
 };

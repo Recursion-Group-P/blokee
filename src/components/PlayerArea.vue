@@ -1,10 +1,13 @@
 <template>
-  <div class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area" style="width: 100%">
-    <div class="row justify-between" style="height: 50px">
-      <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
+  <div
+    class="rounded-borders shadow-1 q-mx-sm q-mt-sm q-pa-md player-area"
+    style="width: 100%"
+  >
+    <div class="row justify-between" style="height: 33px">
+      <div class="text-h6 q-ma-none">Player {{ playerId + 1 }}</div>
       <div class="q-mb-md row">
-        <q-icon name="timer" size="1.5rem"></q-icon>
-        <h6 class="q-ma-none">{{ formatTime }}</h6>
+        <q-icon name="timer" size="1.4rem"></q-icon>
+        <div class="text-h6 q-ma-none">{{ formatTime }}</div>
       </div>
     </div>
     <piece-selector
@@ -22,15 +25,15 @@
 </template>
 
 <script>
-import PieceAlter from './PieceAlter.vue';
-import PieceSelector from './PieceSelector.vue';
-import Vue from 'vue';
+import PieceAlter from "./PieceAlter.vue";
+import PieceSelector from "./PieceSelector.vue";
+import Vue from "vue";
 
 export default Vue.extend({
-  props: ['playerId'],
+  props: ["playerId"],
   components: {
-    'piece-alter': PieceAlter,
-    'piece-selector': PieceSelector,
+    "piece-alter": PieceAlter,
+    "piece-selector": PieceSelector,
   },
   data() {
     return {
@@ -42,8 +45,8 @@ export default Vue.extend({
   },
   computed: {
     formatTime() {
-      let min = ('00' + Math.floor(this.time / 60)).slice(-2);
-      let sec = ('00' + (this.time % 60)).slice(-2);
+      let min = ("00" + Math.floor(this.time / 60)).slice(-2);
+      let sec = ("00" + (this.time % 60)).slice(-2);
       let formatTime = `${min}:${sec}`;
       return formatTime;
     },

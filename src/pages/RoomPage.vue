@@ -9,7 +9,11 @@
       <!-- board -->
       <div class="col-12 col-sm-6 text-center">
         <div class="full-width row justify-center items-center">
-          <canvas ref="canvasRef" :width="boardSettings.width" :height="boardSettings.height" />
+          <canvas
+            ref="canvasRef"
+            :width="boardSettings.width"
+            :height="boardSettings.height"
+          />
         </div>
       </div>
 
@@ -22,24 +26,24 @@
 </template>
 
 <script>
-import PlayerArea from 'src/components/PlayerArea.vue';
-import { mapGetters } from 'vuex';
+import PlayerArea from "src/components/PlayerArea.vue";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
-    'player-area': PlayerArea,
+    "player-area": PlayerArea,
   },
   computed: {
-    ...mapGetters('game', [
-      'timeForEachPlayer',
-      'numberOfPlayers',
-      'boardSettings',
-      'currentPlayerIndex',
-      'players',
+    ...mapGetters("game", [
+      "timeForEachPlayer",
+      "numberOfPlayers",
+      "boardSettings",
+      "currentPlayerIndex",
+      "players",
     ]),
   },
   mounted() {
-    const context = this.$refs.canvasRef.getContext('2d');
+    const context = this.$refs.canvasRef.getContext("2d");
     if (context !== null) {
       this.draw(context);
     }
@@ -48,7 +52,7 @@ export default {
     return {
       numOfPlayers: 4,
       currentPlayer: null,
-      pieceColors: ['#448DD7', '#F48989', '#9FD782', '#FFDF54'],
+      pieceColors: ["#448DD7", "#F48989", "#9FD782", "#FFDF54"],
     };
   },
   methods: {
@@ -67,9 +71,9 @@ export default {
         ctx.lineTo(ctx.canvas.width, 0.5 + x);
       }
 
-      ctx.fillStyle = '#CDD5DF';
+      ctx.fillStyle = "#CDD5DF";
       ctx.fillRect(0, 0, this.boardSettings.width, this.boardSettings.height);
-      ctx.strokeStyle = 'white';
+      ctx.strokeStyle = "white";
       ctx.stroke();
 
       for (const [row, col] of this.boardSettings.startingPositions) {
@@ -77,7 +81,7 @@ export default {
         const [x, y] = this.getStartingPoint(row + 0.5, col + 0.5);
         // arc(x, y, radius, startAngle, endAngle, counterclockwise)
         ctx.arc(x, y, 30 * 0.15, 0, Math.PI * 2, false);
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = "black";
         ctx.fill();
       }
     },
