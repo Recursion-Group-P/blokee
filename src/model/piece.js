@@ -1,106 +1,57 @@
-const PIECES = [
-    'C',
-    'CO',
-    'OCO',
-    ' O\nOC',
-    'OCOO',
-    'O\nOCO',
-    'CO\nOO',
-    'CO\n OO',
-    ' O \nOCO',
-    'O O\nOCO',
-    'OO\nCO\nO',
-    'OOCOO',
-    'O\nOCOO',
-    '  O  \n  O  \nOCO',
-    'OOC\n  O\n  O',
-    ' O \nOCO\n O',
-    ' O\nOC\n OO',
-    ' OO\n C\nOO',
-    'OOC\n  OO',
-    'OO\nCO\nO',
-    ' O\nOCOO',
+export const PIECES = [
+  'C', // [], i1
+  'CO', // [ [ 0, 1 ] ], i2
+  'OCO', // [ [ 0, -1 ], [ 0, 1 ] ], i3
+  ' O\nOC', // [ [ -1, 0 ], [ 0, -1 ] ], v3
+  'OCOO', // [ [ 0, -1 ], [ 0, 1 ], [ 0, 2 ] ], i4
+  'O\nCOO', // [ [ -1, 0 ], [ 0, 1 ], [ 0, 2 ] ], j4
+  'OO\nCO', // [ [ -1, 0 ], [ -1, 1 ], [ 0, 1 ] ], square
+  'OO\n CO', // [ [ -1, -1 ], [ -1, 0 ], [ 0, 1 ] ], z4
+  ' O \nOCO', // [ [ -1, 0 ], [ 0, -1 ], [ 0, 1 ] ], T4
+  'O O\nOCO', // [ [ -1, -1 ], [ -1, 1 ], [ 0, -1 ], [ 0, 1 ] ], c
+  'OO\nCO\nO', // [ [ -1, 0 ], [ -1, 1 ], [ 0, 1 ], [ 1, 0 ] ], p
+  'OOCOO', // [ [ 0, -2 ], [ 0, -1 ], [ 0, 1 ], [ 0, 2 ] ], i5
+  'O\nOCOO', // [ [ -1, -1 ], [ 0, -1 ], [ 0, 1 ], [ 0, 2 ] ], j5
+  '  O\nOCO\n  O', // [ [ -1, 1 ], [ 0, -1 ], [ 0, 1 ], [ 1, 1 ] ], T5
+  ' O \nOCO\n O', // [ [ -1, 0 ], [ 0, -1 ], [ 0, 1 ], [ 1, 0 ] ], x
+  ' O\nOC\n OO', // [ [ -1, 0 ], [ 0, -1 ], [ 1, 0 ], [ 1, 1 ] ], k5
+  ' OO\n C\nOO', // [ [ -1, 0 ], [ -1, 1 ], [ 1, -1 ], [ 1, 0 ] ], z5
+  'OCO\n  OO', // [ [ 0, -1 ], [ 0, 1 ], [ 1, 1 ], [ 1, 2 ] ], z5wide
+  ' C\nOOOO', // [ [ 1, -1 ], [ 1, 0 ], [ 1, 1 ], [ 1, 2 ] ], y
+  'O\nOC\n OO', // [ [ -1, -1 ], [ 0, -1 ], [ 1, 0 ], [ 1, 1 ] ], w
+  'OOO\n  C\n  O', // [ [ -1, -2 ], [ -1, -1 ], [ -1, 0 ], [ 1, 0 ] ] v5
 ];
 
 function getCoordinatesFromCenter(array) {
-    let centerCoordinate = null;
-    const otherCoordinates = [];
-    for (let i = 0; i < array.length; i++) {
-        for (let j = 0; j < array[i].length; j++) {
-            if (array[i][j] == 'C') {
-                centerCoordinate = [i, j];
-            } else if (array[i][j] == 'O') {
-                otherCoordinates.push([i, j]);
-            }
-        }
+  let centerCoordinate = null;
+  const otherCoordinates = [];
+  for (let i = 0; i < array.length; i++) {
+    for (let j = 0; j < array[i].length; j++) {
+      if (array[i][j] == 'C') {
+        centerCoordinate = [i, j];
+      } else if (array[i][j] == 'O') {
+        otherCoordinates.push([i, j]);
+      }
     }
+  }
 
-    return otherCoordinates.map((coordPair) => [
-        coordPair[0] - centerCoordinate[0],
-        coordPair[1] - centerCoordinate[1],
-    ]);
+  return otherCoordinates.map((coordPair) => [
+    coordPair[0] - centerCoordinate[0],
+    coordPair[1] - centerCoordinate[1],
+  ]);
 }
 
-function getAllPieces(pieces) {
-    const allPieceCoordinates = [];
-    for (const piece of pieces) {
-        allPieceCoordinates.push(getCoordinatesFromCenter(piece.split('\n')));
-    }
+export function getAllPieces(pieces) {
+  const allPieceCoordinates = [];
+  for (const piece of pieces) {
+    allPieceCoordinates.push(getCoordinatesFromCenter(piece.split('\n')));
+  }
 
-    return allPieceCoordinates;
+  return allPieceCoordinates;
 }
 
 export const allPiecesCoordinates = getAllPieces(PIECES);
 export const allPiecesStates = Object.entries(allPiecesCoordinates).map(function ([i]) {
-    return { pieceId: parseInt(i), direction: 0 };
+  return { pieceId: parseInt(i), direction: 0 };
 });
 
-// horizontal flip
-
-// flipPairs
-// [
-// [0, 4],
-// [1, 7],
-// [2, 6],
-// [3, 5]
-// ];
-
-// flipPairs.includes(somePiece.direction => 0);
-// matchedPair = [0,4]
-// if direction == matchedPair[0] ? matchedPair[1] : matchedPair[0];
-
-// allPiecesCoordinates
-// [
-//     [],
-//     [[0, 1]],
-//     [[0, -1], [1, 0]],
-//     [[0, -1], [0, 1]],
-//     [[0, 1], [1, 0], [1, 1]],
-//     [[-1, 0], [0, -1], [0, 1]],
-//     [[0, -1], [0, 1], [0, 2]],
-//     [[-1, 1], [0, -1], [0, 1]],
-//     [[0, 1], [1, -1], [1, 0]],
-//     [[-1, -1], [0, -1], [0, 1], [0, 2]],
-//     [[-2, 0], [-1, 0], [0, -1], [0, 1]],
-//     [[-2, 0], [-1, 0], [0, 1], [0, 2]],
-//     [[0, 1], [0, 2], [1, -1], [1, 0]],
-//     [[-1, 1], [0, -1], [0, 1], [1, -1]],
-//     [[0, -2], [0, -1], [0, 1], [0, 2]],
-//     [[-1, 0], [0, 1], [1, 0], [1, 1]],
-//     [[-1, 0], [-1, 1], [0, -1], [1, -1]],
-//     [[-1, 0], [-1, 1], [1, 0], [1, 1]],
-//     [[-1, 0], [-1, 1], [0, -1], [1, 0]],
-//     [[-1, 0], [0, -1], [0, 1], [1, 0]],
-//     [[-1, 0], [0, -1], [0, 1], [0, 2]]
-// ]
-
-// [
-// { pieceId: 0, direction: 0}
-// { pieceId: 1, direction: 0}
-// { pieceId: 2, direction: 0}
-// { pieceId: 3, direction: 0}
-// { pieceId: 4, direction: 0}
-// { pieceId: 5, direction: 0}
-// { pieceId: 6, direction: 0}
-// { pieceId: 7, direction: 0}
-// ]
