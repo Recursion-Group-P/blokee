@@ -1,19 +1,18 @@
 <template>
   <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
     <canvas
-      v-for="(piece, idx) in players[playerId].remainingPieces"
-      :key="idx"
-      :ref="'canvas' + idx"
+      v-for="(piece, pieceId) in players[playerId].remainingPieces"
+      :key="pieceId"
+      :ref="'canvas' + pieceId"
       class="cursor-pointer"
       style="width: 25%"
-      :data-selected-piece-id="idx"
-      @click="selectPiece"
+      @click="selectPiece(pieceId)"
     ></canvas>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   props: ['playerId'],
@@ -27,6 +26,8 @@ export default {
     };
   },
   methods: {
+    ...mapActions('game', ['setCurrentPlayerSelectedPieceId']),
+
     // for pieces
     drawPiece(canvasId, pieceCoordinate) {
       let canvas = this.$refs[canvasId][0];
@@ -65,8 +66,11 @@ export default {
         );
       }
     },
-    selectPiece(e) {
-      this.$emit('select-piece', e.currentTarget.getAttribute('data-selected-piece-id'));
+    selectPiece(pieceId) {
+      this.setCurrentPlayerSelectedPieceId({
+        currentPlayerId: this.playerId,
+        selectedPieceId: pieceId,
+      });
     },
   },
   mounted() {

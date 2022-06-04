@@ -40,11 +40,11 @@
       </q-tabs>
     </q-footer>
 
-    <!-- <q-drawer
+    <q-drawer
       v-model="leftDrawerOpen"
+      :show-if-above="false"
       :breakpoint="767"
       :width="250"
-      show-if-above
       bordered
       content-class="bg-blue-2"
     >
@@ -69,7 +69,7 @@
           </q-item-section>
         </q-item>
       </q-list>
-    </q-drawer> -->
+    </q-drawer>
 
     <q-page-container>
       <router-view />
@@ -98,13 +98,6 @@ export default {
           icon: "settings",
           description: "description2",
           to: "/settings",
-          requiresAuth: true
-        },
-        {
-          label: "Room",
-          icon: "extension",
-          description: "description3",
-          to: "/room",
           requiresAuth: true
         },
         {

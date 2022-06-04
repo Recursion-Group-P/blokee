@@ -22,12 +22,15 @@
           color="grey-7"
           round
           icon="close"
-          :data-selected-piece-id="-1"
           @click="cancelPiece"
         />
       </div>
-      <div class="bg-grey-2 rounded-borders q-pa-sm flex justify-center">
-        <canvas class="cursor-pointer" ref="canvas" @click="handleSelectPiece"></canvas>
+      <div class="bg-grey-2 rounded-borders q-pa-sm row justify-center">
+        <canvas
+          ref="canvas"
+          width="250"
+          height="250"
+        ></canvas>
       </div>
     </div>
   </div>
@@ -37,34 +40,31 @@
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
-  props: ['selectedPieceId', 'playerId'],
+  props: ['playerId'],
   computed: {
     ...mapGetters('game', ['players']),
+    
+    currPlayerSelectedPieceId() {
+      return this.players[this.playerId].selectedPieceId;
+    },
   },
   data() {
     return {
       cellSize: 30,
-      startDrawCoordinate: { x: 135, y: 60 }, // 150-(30/2), 75-(30/2)
+      startDrawCoordinate: { x: 110, y: 110 },
       pieceCoordinate: null,
       isFlipped: false,
+      currentDegree: 0,
     };
   },
   methods: {
-    ...mapActions('game', ['setCurrentPlayerSelectedPieceId']),
+    ...mapActions('game', ['setCurrentPlayerSelectedPieceId', 'updateCurrentPieceCoordinate']),
 
-    handleSelectPiece() {
-      this.setCurrentPlayerSelectedPieceId({
-        currentPlayerId: this.playerId,
-        selectedPieceId: this.selectedPieceId,
-      });
-    },
-
-    cancelPiece(e) {
+    cancelPiece() {
       this.setCurrentPlayerSelectedPieceId({
         currentPlayerId: this.playerId,
         selectedPieceId: -1,
       });
-      this.$emit('cancel-piece', e.currentTarget.getAttribute('data-selected-piece-id'));
     },
 
     // Draw the selected piece
@@ -80,22 +80,23 @@ export default {
 
       // Flip
       if (flip === true) {
-        ctx.translate(150, 75);
-        ctx.scale(-1, 1);
-        ctx.translate(-150, -75);
+        ctx.translate(125, 125);
+        if (this.currentDegree === 0 || this.currentDegree === 180) ctx.scale(-1, 1);
+        if (this.currentDegree === 90 || this.currentDegree === 270) ctx.scale(1, -1);
+        ctx.translate(-125, -125);
       }
 
       // Rotate
       if (rotateDirection !== null) {
         if (rotateDirection === 'cw') {
-          ctx.translate(150, 75);
+          ctx.translate(125, 125);
           ctx.rotate((90 * Math.PI) / 180);
-          ctx.translate(-150, -75);
+          ctx.translate(-125, -125);
         }
         if (rotateDirection === 'ccw') {
-          ctx.translate(150, 75);
+          ctx.translate(125, 125);
           ctx.rotate((-90 * Math.PI) / 180);
-          ctx.translate(-150, -75);
+          ctx.translate(-125, -125);
         }
       }
 
@@ -134,18 +135,47 @@ export default {
     flipPiece() {
       let flip = true;
       this.drawPiece(this.pieceCoordinate, flip);
+      // Update isFlipped
+      this.isFlipped = !this.isFlipped;
+
+      this.updateCurrentPieceCoordinate({
+        currentPlayerId: this.playerId,
+        isFlipped: this.isFlipped,
+        currentDegree: this.currentDegree,
+        currentPiece: this.currPlayerSelectedPieceId,
+      });
     },
     turnPiece90DegreeClockwise() {
       let rotateDirection = 'cw'; // cw stands for "clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
+      // Update currentDegree
+      this.currentDegree += 90;
+      if (this.currentDegree == 360) this.currentDegree = 0;
+
+      this.updateCurrentPieceCoordinate({
+        currentPlayerId: this.playerId,
+        isFlipped: this.isFlipped,
+        currentDegree: 90,
+        currentPiece: this.currPlayerSelectedPieceId,
+      });
     },
     turnPiece90DegreeCounterClockwise() {
       let rotateDirection = 'ccw'; // cw stands for "counter clock wise"
       this.drawPiece(this.pieceCoordinate, false, rotateDirection);
+      // Update currentDegree
+      this.currentDegree -= 90;
+      if (this.currentDegree < 0) this.currentDegree = 360 + this.currentDegree;
+
+      this.updateCurrentPieceCoordinate({
+        currentPlayerId: this.playerId,
+        isFlipped: this.isFlipped,
+        currentDegree: -90,
+        currentPiece: this.currPlayerSelectedPieceId,
+      });
     },
   },
   mounted() {
-    this.pieceCoordinate = this.players[this.playerId].remainingPieces[this.selectedPieceId];
+    this.pieceCoordinate = this.players[this.playerId].remainingPieces[this.currPlayerSelectedPieceId];
     this.drawPiece(this.pieceCoordinate);
   },
 };

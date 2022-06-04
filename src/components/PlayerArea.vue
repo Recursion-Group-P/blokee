@@ -9,19 +9,19 @@
     </div>
     <piece-selector
       @select-piece="selectPiece"
-      v-if="selectedPieceId == -1"
+      v-if="currPlayerSelectedPieceId === -1"
       :player-id="playerId"
     />
     <piece-alter
       @cancel-piece="selectPiece"
       v-else
-      :selected-piece-id="selectedPieceId"
       :player-id="playerId"
     />
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import PieceAlter from './PieceAlter.vue';
 import PieceSelector from './PieceSelector.vue';
 import Vue from 'vue';
@@ -41,6 +41,12 @@ export default Vue.extend({
     };
   },
   computed: {
+    ...mapGetters('game', ['players']),
+
+    currPlayerSelectedPieceId() {
+      return this.players[this.playerId].selectedPieceId;
+    },
+
     formatTime() {
       let min = ('00' + Math.floor(this.time / 60)).slice(-2);
       let sec = ('00' + (this.time % 60)).slice(-2);
