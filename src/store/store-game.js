@@ -48,28 +48,34 @@ const mutations = {
     currPlayer.remainingPieces.splice(currPlayer.selectedPieceId, 1);
   },
 
-  updateCurrentPieceCoordinate(state, payload) {
+  updateCurrentPieceCoordinateAfterFlip(state, payload) {
     const currPlayer = state.players[payload.currentPlayerId];
     let pieceCoordinate = currPlayer.remainingPieces[payload.currentPiece];
-    if (payload['isFlipped'] === true) {
-      // フリップ(左右反転)：Y座標は不変、X座標を+/-反対にする
-      for (let i = 0; i < pieceCoordinate.length; i++) {
-        if (payload['currentDegree'] === 0 || payload['currentDegree'] === 180)
-          pieceCoordinate[i].splice(1, 1, -pieceCoordinate[i][1]);
-        if (payload['currentDegree'] === 90 || payload['currentDegree'] === 270)
-          pieceCoordinate[i].splice(0, 1, -pieceCoordinate[i][0]);
+
+    // フリップ(左右反転)：Y座標は不変、X座標を+/-反対にする
+    for (let i = 0; i < pieceCoordinate.length; i++) {
+      pieceCoordinate[i].splice(1, 1, -pieceCoordinate[i][1]);
+    }
+  },
+
+  updateCurrentPieceCoordinateAfterRotation(state, payload) {
+    const currPlayer = state.players[payload.currentPlayerId];
+    let pieceCoordinate = currPlayer.remainingPieces[payload.currentPiece];
+
+    if (payload["rotateDirection"] === "cw") {
+      for (let j = 0; j < pieceCoordinate.length; j++) {
+        pieceCoordinate[j].splice(0, 1, -pieceCoordinate[j][0]);
+        let temp = pieceCoordinate[j][0];
+        pieceCoordinate[j].splice(0, 1, pieceCoordinate[j][1]);
+        pieceCoordinate[j].splice(1, 1, temp);
       }
     }
-    if (payload['currentDegree'] !== 0) {
-      // 右90度回転：Y座標を+/-反対にし、その後Y座標の値とX座標の値を入れ替える（※左90度回転 = 右270度回転）
-      let timesOfRotation = payload['currentDegree'] / 90;
-      for (let i = 0; i < timesOfRotation; i++) {
-        for (let j = 0; j < pieceCoordinate.length; j++) {
-          pieceCoordinate[j].splice(0, 1, -pieceCoordinate[j][0]);
-          let temp = pieceCoordinate[j][0];
-          pieceCoordinate[j].splice(0, 1, pieceCoordinate[j][1]);
-          pieceCoordinate[j].splice(1, 1, temp);
-        }
+    if (payload["rotateDirection"] === "ccw") {
+      for (let j = 0; j < pieceCoordinate.length; j++) {
+        pieceCoordinate[j].splice(1, 1, -pieceCoordinate[j][1]);
+        let temp = pieceCoordinate[j][1];
+        pieceCoordinate[j].splice(1, 1, pieceCoordinate[j][0]);
+        pieceCoordinate[j].splice(0, 1, temp);
       }
     }
   },
@@ -131,8 +137,12 @@ const actions = {
     commit('setCurrentPlayerRemainingPieces', { currentPlayerId });
   },
 
-  updateCurrentPieceCoordinate({ commit }, { currentPlayerId, isFlipped, currentDegree, currentPiece }) {
-    commit('updateCurrentPieceCoordinate', { currentPlayerId, isFlipped, currentDegree, currentPiece });
+  updateCurrentPieceCoordinateAfterFlip({ commit }, { currentPlayerId, currentPiece }) {
+    commit('updateCurrentPieceCoordinateAfterFlip', { currentPlayerId, currentPiece })
+  },
+
+  updateCurrentPieceCoordinateAfterRotation({ commit }, { currentPlayerId, rotateDirection, currentPiece }) {
+    commit('updateCurrentPieceCoordinateAfterRotation', { currentPlayerId, rotateDirection, currentPiece });
   },
 };
 
