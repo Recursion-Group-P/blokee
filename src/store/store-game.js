@@ -1,4 +1,4 @@
-import { Player } from 'src/model/Player';
+import { Player } from 'src/model/player';
 import { PLAYER_COLORS } from 'src/constants';
 
 const state = {
