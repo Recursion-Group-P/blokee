@@ -1,24 +1,22 @@
 <template>
   <div class="row wrap room">
-    <div class="row items-center" style="height: calc(100vh - 50px)">
-      <div class="col-12 col-sm-3 flex">
-        <player-area :playerId="0" />
-        <player-area v-if="players.length > 2" :playerId="2" />
+    <div class="row items-center justify-around" style="height: calc(100vh - 50px); width: 100%">
+      <div class="col-12 col-sm-3 flex items-center">
+        <player-area :playerId="0" style="height: 50%" />
+        <player-area v-if="players.length > 2" :playerId="2" style="height: 50%" />
       </div>
 
       <!-- board -->
-      <div class="col-12 col-sm-6 text-center">
+      <div class="col-12 col-sm-4 text-center">
         <div class="full-width row justify-center items-center">
           <canvas ref="canvasRef" :width="boardSettings.width" :height="boardSettings.height" />
         </div>
-        <h4>
-          Player {{ currentPlayerId + 1 }}: Selected Piece ID = ({{ currPlayerSelectedPieceId }})
-        </h4>
+        <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
       </div>
 
       <div class="col-12 col-sm-3 flex justify-end">
-        <player-area :playerId="1" />
-        <player-area v-if="players.length > 2" :playerId="3" />
+        <player-area :playerId="1" style="height: 50%" />
+        <player-area v-if="players.length > 2" :playerId="3" style="height: 50%" />
       </div>
     </div>
   </div>
@@ -103,7 +101,8 @@ export default {
             context.strokeStyle = 'white';
             context.lineWidth = 2;
 
-            let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId];
+            let currPiece =
+              this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
             context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
 
             // draw center piece
@@ -140,7 +139,8 @@ export default {
           let row = Math.floor(mouseY / cellWidth);
           let col = Math.floor(mouseX / cellWidth);
 
-          let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId];
+          let currPiece =
+            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
 
           if (this.isValidMove(currPiece, row, col)) {
             // place center piece
@@ -205,17 +205,9 @@ export default {
             }
 
             console.log(this.availablePlayerMoves[this.currentPlayerId]);
-
-            this.updateCurrentPlayerRemainingPieces({
-              currentPlayerId: this.currentPlayerId,
-            });
-
-            this.setCurrentPlayerSelectedPieceId({
-              currentPlayerId: this.currentPlayerId,
-              selectedPieceId: -1,
-            });
-
             this.changePlayerTurn();
+          } else {
+            this.notifyInvalid();
           }
         }
 
@@ -239,10 +231,40 @@ export default {
   },
 
   methods: {
-    ...mapActions('game', ['setCurrentPlayerSelectedPieceId', 'updateCurrentPlayerRemainingPieces']),
+    ...mapActions('game', [
+      'setCurrentPlayerSelectedPieceId',
+      'updateCurrentPlayerRemainingPieces',
+      'addReplayState',
+    ]),
+
+    notifyInvalid() {
+      this.$q.notify({
+        type: 'warning',
+        message: '現在のマス目にブロックを置けません！',
+        timeout: 1000,
+      });
+    },
 
     changePlayerTurn() {
+      // add replay state
+      console.log('added to replay', this.gameBoard);
+      this.addReplayState({
+        boardState: this.gameBoard.map((arr) => arr.slice()),
+        usedPiece: this.currPlayerSelectedPieceId,
+      });
+
+      this.updateCurrentPlayerRemainingPieces({
+        currentPlayerId: this.currentPlayerId,
+      });
+
+      this.setCurrentPlayerSelectedPieceId({
+        currentPlayerId: this.currentPlayerId,
+        selectedPieceId: -1,
+      });
+
+      // change player ID
       this.currentPlayerId = (this.currentPlayerId + 1) % this.numberOfPlayers;
+
       this.drawBoard(this.context);
     },
 
@@ -266,7 +288,7 @@ export default {
       let isValid = false;
       let hasCorner = false;
 
-      console.log('check if currPiece is valid')
+      console.log('check if currPiece is valid');
       // check if center piece can be placed
       if (this.inBounds(row, col) && this.gameBoard[row][col] === 0) {
         isValid = true;
@@ -274,8 +296,12 @@ export default {
           let hori_i = row + HORIZONTAL_DIR[0];
           let hori_j = col + HORIZONTAL_DIR[1];
           if (this.inBounds(hori_i, hori_j)) {
-            console.log(`hori (${hori_i}, ${hori_j}) ${this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1}`)
-            isValid = isValid && (this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1);
+            console.log(
+              `hori (${hori_i}, ${hori_j}) ${
+                this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1
+              }`
+            );
+            isValid = isValid && this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1;
           }
         }
         hasCorner = this.availablePlayerMoves[this.currentPlayerId][row][col] === 1;
@@ -286,22 +312,28 @@ export default {
           let curr_row = row + currPiece[i][0];
           let curr_col = col + currPiece[i][1];
           // all must be true for isValid to be true
-          isValid =
-            isValid &&
-            this.inBounds(curr_row, curr_col) &&
-            this.gameBoard[curr_row][curr_col] === 0;
-          for (const HORIZONTAL_DIR of HORIZONTAL_DIRS) {
-            let hori_i = curr_row + HORIZONTAL_DIR[0];
-            let hori_j = curr_col + HORIZONTAL_DIR[1];
-            if (this.inBounds(hori_i, hori_j)) {
-              console.log(`hori (${hori_i}, ${hori_j}) ${this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1}`)
-              isValid = isValid && (this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1);
+          console.log(curr_row, curr_col);
+          if (this.inBounds(curr_row, curr_col)) {
+            isValid = isValid && this.gameBoard[curr_row][curr_col] === 0;
+            for (const HORIZONTAL_DIR of HORIZONTAL_DIRS) {
+              let hori_i = curr_row + HORIZONTAL_DIR[0];
+              let hori_j = curr_col + HORIZONTAL_DIR[1];
+              if (this.inBounds(hori_i, hori_j)) {
+                console.log(
+                  `hori (${hori_i}, ${hori_j}) ${
+                    this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1
+                  }`
+                );
+                isValid = isValid && this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1;
+              }
             }
+            hasCorner =
+              hasCorner ||
+              this.availablePlayerMoves[this.currentPlayerId][curr_row][curr_col] === 1;
+            console.log(`(${curr_row}, ${curr_col}) isValid: ${isValid}, hasCorner: ${hasCorner}`);
+          } else {
+            return false;
           }
-          hasCorner =
-            hasCorner ||
-            this.availablePlayerMoves[this.currentPlayerId][curr_row][curr_col] === 1;
-          console.log(`(${curr_row}, ${curr_col}) isValid: ${isValid}, hasCorner: ${hasCorner}`);
         }
       }
 
@@ -356,6 +388,12 @@ export default {
 </script>
 
 <style scoped>
+/* パフォーマンス向上に入れてみました（変わりないかも？）*/
+canvas {
+  image-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+}
+
 .room {
   position: relative;
 }
@@ -363,6 +401,5 @@ export default {
   position: absolute;
   top: 5%;
   left: 28%;
-  /* width: 50%; */
 }
 </style>

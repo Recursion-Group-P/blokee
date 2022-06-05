@@ -141,7 +141,7 @@ export default Vue.extend({
   mounted() {
     this.pieceCoordinate = this.players[this.playerId].remainingPieces[
       this.currPlayerSelectedPieceId
-    ];
+    ].pieceCoords;
     this.drawPiece(this.pieceCoordinate);
   },
 });

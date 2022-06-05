@@ -19,7 +19,7 @@ export const PIECES = [
   'OCO\n  OO', // [ [ 0, -1 ], [ 0, 1 ], [ 1, 1 ], [ 1, 2 ] ], z5wide
   ' C\nOOOO', // [ [ 1, -1 ], [ 1, 0 ], [ 1, 1 ], [ 1, 2 ] ], y
   'O\nOC\n OO', // [ [ -1, -1 ], [ 0, -1 ], [ 1, 0 ], [ 1, 1 ] ], w
-  'OOO\n  C\n  O', // [ [ -1, -2 ], [ -1, -1 ], [ -1, 0 ], [ 1, 0 ] ] v5
+  'O  \nC  \nOOO', // [ [ -1, -2 ], [ -1, -1 ], [ -1, 0 ], [ 1, 0 ] ] v5
 ];
 
 function getCoordinatesFromCenter(array) {
@@ -42,16 +42,15 @@ function getCoordinatesFromCenter(array) {
 }
 
 export function getAllPieces(pieces) {
-  const allPieceCoordinates = [];
-  for (const piece of pieces) {
-    allPieceCoordinates.push(getCoordinatesFromCenter(piece.split('\n')));
+  const allPieceCoordinates = {};
+  for (let i = 0; i < pieces.length; i++) {
+    const currPiece = {
+      pieceCoords: null,
+      isUsed: false,
+    };
+    currPiece['pieceCoords'] = getCoordinatesFromCenter(pieces[i].split('\n'));
+    allPieceCoordinates[i] = currPiece;
   }
 
   return allPieceCoordinates;
 }
-
-export const allPiecesCoordinates = getAllPieces(PIECES);
-export const allPiecesStates = Object.entries(allPiecesCoordinates).map(function ([i]) {
-  return { pieceId: parseInt(i), direction: 0 };
-});
-
