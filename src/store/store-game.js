@@ -98,7 +98,6 @@ const mutations = {
 
   updateReplayCurrentPlayerRemainingPieces(state, payload) {
     const currPlayer = state.replay.players[payload.currentPlayerId];
-    console.log(currPlayer)
     currPlayer.remainingPieces[payload.usedPieceId].isUsed = payload.isUsed;
   },
 };
