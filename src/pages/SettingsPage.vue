@@ -5,7 +5,7 @@
       プレイ人数・持ち時間・開始位置を選んでください。
     </div>
     <div class="row justify-center q-mt-lg">
-      <div class="col-12 col-md-6 text-center">
+      <div class="col-10 col-md-3 text-center">
         <q-card class="my-card">
           <q-card-section>
             <q-select v-model="numberOfPlayers" :options="numberOfPlayersOptions" label="Number of players" />

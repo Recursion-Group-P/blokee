@@ -28,6 +28,12 @@ const routes = [
         component: () => import("pages/FaqPage.vue"),
         meta: { requiresAuth: false },
       },
+      {
+        path: "/replay",
+        name: 'replay',
+        component: () => import("pages/Replay.vue"),
+        meta: { requiresAuth: true },
+      },
     ],
   },
 

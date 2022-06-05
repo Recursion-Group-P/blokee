@@ -1,5 +1,8 @@
 <template>
-  <div class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area" style="width: 100%">
+  <div
+    class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area"
+    :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
+  >
     <div class="row justify-between" style="height: 50px">
       <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
       <div class="q-mb-md row">
@@ -12,11 +15,7 @@
       v-if="currPlayerSelectedPieceId === -1"
       :player-id="playerId"
     />
-    <piece-alter
-      @cancel-piece="selectPiece"
-      v-else
-      :player-id="playerId"
-    />
+    <piece-alter @cancel-piece="selectPiece" v-else :player-id="playerId" />
   </div>
 </template>
 
@@ -24,6 +23,7 @@
 import { mapGetters } from 'vuex';
 import PieceAlter from './PieceAlter.vue';
 import PieceSelector from './PieceSelector.vue';
+import { PLAYER_COLORS } from 'src/constants';
 import Vue from 'vue';
 
 export default Vue.extend({
@@ -35,13 +35,14 @@ export default Vue.extend({
   data() {
     return {
       // For timer
+      playerColor: PLAYER_COLORS[this.playerId] + '66',
       time: 600,
       timerObj: null,
       selectedPieceId: -1,
     };
   },
   computed: {
-    ...mapGetters('game', ['players']),
+    ...mapGetters('game', ['players', 'numberOfPlayers']),
 
     currPlayerSelectedPieceId() {
       return this.players[this.playerId].selectedPieceId;
@@ -76,7 +77,9 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-.player-area {
-  width: 50%;
+@media screen and (max-width: 768px) {
+  .player-area {
+    width: 100% !important;
+  }
 }
 </style>

@@ -1,27 +1,43 @@
 <template>
-  <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
-    <canvas
-      v-for="pieceId in currPlayerRemainingPieces"
-      :key="pieceId"
-      :ref="'canvas' + pieceId"
-      class="cursor-pointer"
-      style="width: 20%"
-      height="250px"
-      @click="selectPiece(pieceId)"
-    ></canvas>
+  <div
+    class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area"
+    :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
+  >
+    <div class="row justify-start" style="height: 50px">
+      <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
+    </div>
+    <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
+      <canvas
+        v-for="pieceId in currPlayerRemainingPieces"
+        :key="pieceId"
+        :ref="'canvas' + pieceId"
+        style="width: 20%"
+        height="250px"
+      ></canvas>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters } from 'vuex';
+import { PLAYER_COLORS } from 'src/constants';
 
 export default {
   props: ['playerId'],
+
+  data() {
+    return {
+      playerColor: PLAYER_COLORS[this.playerId] + '66',
+      cellSize: 50,
+      startDrawCoordinate: { x: 100, y: 100 },
+    };
+  },
+
   computed: {
-    ...mapGetters('game', ['players']),
+    ...mapGetters('game', ['numberOfPlayers', 'replay']),
 
     currPlayerRemainingPieces() {
-      const remainingPieces = this.players[this.playerId].remainingPieces;
+      const remainingPieces = this.replay.players[this.playerId].remainingPieces;
       return Object.keys(remainingPieces).reduce((filtered, pieceId) => {
         if (!remainingPieces[pieceId].isUsed) {
           filtered.push(parseInt(pieceId));
@@ -30,20 +46,13 @@ export default {
       }, []);
     },
   },
-  data() {
-    return {
-      cellSize: 50,
-      startDrawCoordinate: { x: 100, y: 100 },
-    };
-  },
-  methods: {
-    ...mapActions('game', ['setCurrentPlayerSelectedPieceId']),
 
+  methods: {
     // for pieces
     drawPiece(canvasId, pieceCoordinate) {
       let canvas = this.$refs[canvasId][0];
       let ctx = canvas.getContext('2d');
-      ctx.fillStyle = this.players[this.playerId].color;
+      ctx.fillStyle = this.replay.players[this.playerId].color;
       ctx.strokeStyle = 'white';
       ctx.lineWidth = 3;
 
@@ -77,18 +86,28 @@ export default {
         );
       }
     },
-    selectPiece(pieceId) {
-      this.setCurrentPlayerSelectedPieceId({
-        currentPlayerId: this.playerId,
-        selectedPieceId: pieceId,
-      });
+
+    drawPieces() {
+      const pieceCoordinates = this.replay.players[this.playerId].remainingPieces;
+      for (const pieceId of this.currPlayerRemainingPieces) {
+        this.drawPiece('canvas' + pieceId, pieceCoordinates[pieceId].pieceCoords);
+      }
     },
   },
+
   mounted() {
-    const pieceCoordinates = this.players[this.playerId].remainingPieces;
-    for (const pieceId of this.currPlayerRemainingPieces) {
-      this.drawPiece('canvas' + pieceId, pieceCoordinates[pieceId].pieceCoords);
-    }
+    this.drawPieces();
+
+    // mounted されてから実行
+    this.$watch(
+      'currPlayerRemainingPieces',
+      function () {
+        this.drawPieces();
+      },
+      {
+        immediate: true,
+      }
+    );
   },
 };
 </script>
