@@ -2,7 +2,8 @@
   <div class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area" style="width: 100%">
     <div class="row justify-between" style="height: 50px">
       <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
-      <div>{{ this.players[this.playerId].score }}</div>
+      <div>{{ "score: " + this.players[this.playerId].score }}</div>
+      <div>{{ "outOfGame: " + this.players[this.playerId].outOfGame }}</div>
       <div class="row q-mb-md q-mr-sm">
         <q-icon name="timer" size="1.5rem"></q-icon>
         <h6 class="q-ma-none">{{ formatTime }}</h6>
@@ -15,10 +16,10 @@
           size="sm"
           padding="sm md"
           label="Pass"
-          @click="showConfirmPassArea"
+          @click="toggleConfirmPassArea"
+          :disabled="confirmPassArea"
         />
       </div>
-      <div>{{ confirmPassArea }}</div>
     </div>
     <piece-selector
       @select-piece="selectPiece"
@@ -30,12 +31,17 @@
       v-if="currPlayerSelectedPieceId !== -1 && confirmPassArea === false"
       :player-id="playerId"
     />
-    <confirm-pass v-if="confirmPassArea === true" @cancelPass="hideConfirmPassArea" />
+    <confirm-pass
+      v-if="confirmPassArea === true"
+      @hideConfirmPassArea="toggleConfirmPassArea"
+      @stopTimer="stopTimer"
+      :player-id="playerId"
+    />
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import PieceAlter from "./PieceAlter.vue";
 import PieceSelector from "./PieceSelector.vue";
 import ConfirmPass from "./ConfirmPass.vue";
@@ -73,6 +79,7 @@ export default Vue.extend({
     },
   },
   methods: {
+    ...mapActions("game", ["updatePlayerOutOfGame"]),
     // For timer
     countDown() {
       this.time--;
@@ -83,24 +90,33 @@ export default Vue.extend({
       this.timerObj = setInterval(function () {
         self.countDown();
         console.log(self.time);
-        if (self.time <= 0) self.stopTimer();
       }, 1000);
     },
     stopTimer() {
+      console.log("stop!!!!!!!!!");
       clearInterval(this.timerObj);
     },
     selectPiece(e) {
       this.selectedPieceId = e;
     },
-    showConfirmPassArea() {
-      this.confirmPassArea = true;
-    },
-    hideConfirmPassArea() {
-      this.confirmPassArea = false;
+    toggleConfirmPassArea() {
+      this.confirmPassArea = !this.confirmPassArea;
     },
   },
   mounted() {
     this.time = this.players[this.playerId].time;
+  },
+  watch: {
+    // Timerが0になったらstore-gameのmutationでplayerのoutOfGameをtrueに更新
+    time: {
+      handler(time) {
+        if (time <= 0) {
+          console.log(`Player${this.playerId} ran out of the time!`);
+          this.updatePlayerOutOfGame({ currentPlayerId: this.playerId });
+          this.stopTimer();
+        }
+      },
+    },
   },
 });
 </script>

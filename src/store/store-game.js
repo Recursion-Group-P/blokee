@@ -79,6 +79,12 @@ const mutations = {
   updatePlayerScore(state, payload) {
     state.players[payload["currentPlayerId"]].score += payload["numOfPieceCells"];
   },
+
+  updatePlayerOutOfGame(state, payload) {
+    console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
+    state.players[payload["currentPlayerId"]].outOfGame = true;
+    console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
+  },
 };
 
 const actions = {
@@ -153,7 +159,11 @@ const actions = {
   },
 
   updatePlayerScore({ commit }, { currentPlayerId, numOfPieceCells }) {
-    commit("updatePlayerScore", { currentPlayerId, numOfPieceCells })
+    commit("updatePlayerScore", { currentPlayerId, numOfPieceCells });
+  },
+
+  updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
+    commit("updatePlayerOutOfGame", { currentPlayerId });
   },
 };
 

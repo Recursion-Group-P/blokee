@@ -7,6 +7,6 @@ export class Player {
     this.time = time;
     this.remainingPieces = getAllPieces(PIECES);
     this.selectedPieceId = -1;
-    this.passed = false;
+    this.outOfGame = false;
   }
 }
