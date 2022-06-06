@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area"
+    class="rounded-borders shadow-1 q-my-sm q-mx-auto q-pa-md player-area"
     :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
   >
     <div class="row justify-between" style="height: 50px">

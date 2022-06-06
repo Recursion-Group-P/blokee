@@ -45,7 +45,8 @@
       :show-if-above="false"
       :breakpoint="767"
       :width="250"
-      bordered
+      overlay
+      elevated
       content-class="bg-blue-2"
     >
       <q-list>

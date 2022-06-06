@@ -112,10 +112,10 @@ const actions = {
           [13, 13],
         ];
       const payload = {
-        width: 490,
-        height: 490,
+        width: 420,
+        height: 420,
         totalCells: 14,
-        cellWidth: 35,
+        cellWidth: 30,
         startingPositions,
       };
       commit('setBoardSettings', payload);
@@ -135,10 +135,10 @@ const actions = {
           [19, 19],
         ];
       const payload = {
-        width: 600,
-        height: 600,
+        width: 500,
+        height: 500,
         totalCells: 20,
-        cellWidth: 30,
+        cellWidth: 25,
         startingPositions,
       };
       commit('setBoardSettings', payload);
