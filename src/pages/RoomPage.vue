@@ -1,6 +1,5 @@
 <template>
   <div class="row wrap room">
-
     <div class="q-pa-md q-mx-auto lt-md">
       <div class="q-gutter-y-md" style="max-width: 400px">
         <q-card flat>
@@ -38,7 +37,6 @@
               <player-area v-if="players.length > 2" :playerId="3" />
             </q-tab-panel>
           </q-tab-panels>
-
         </q-card>
       </div>
     </div>
@@ -52,8 +50,13 @@
       <!-- board -->
       <div class="col-12 col-sm-4 text-center">
         <div class="full-width row justify-center items-center">
-          <canvas ref="canvasRef" :width="boardSettings.width" :height="boardSettings.height" />
+          <canvas
+            ref="canvasRef"
+            :width="boardSettings.width"
+            :height="boardSettings.height"
+          />
         </div>
+        <h4>{{ `currentPlayerId: ` + currentPlayerId }}</h4>
         <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
       </div>
 
@@ -66,9 +69,9 @@
 </template>
 
 <script>
-import PlayerArea from 'src/components/PlayerArea.vue';
-import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
-import { mapGetters, mapActions } from 'vuex';
+import PlayerArea from "src/components/PlayerArea.vue";
+import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from "src/constants";
+import { mapGetters, mapActions } from "vuex";
 
 //TODO: Placing pieces on a grid
 // 1. when piece is clicked -> selectedPieceId = selected piece idx (store in player object vuex?)
@@ -78,11 +81,17 @@ import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
-    'player-area': PlayerArea,
+    "player-area": PlayerArea,
   },
 
   computed: {
-    ...mapGetters('game', ['timeForEachPlayer', 'numberOfPlayers', 'boardSettings', 'players']),
+    ...mapGetters("game", [
+      "timeForEachPlayer",
+      "numberOfPlayers",
+      "boardSettings",
+      "players",
+      "currentPlayerId",
+    ]),
 
     currPlayer() {
       return this.players[this.currentPlayerId];
@@ -114,24 +123,23 @@ export default {
 
   data() {
     return {
-      currentPlayerId: 0,
       isDragging: false,
       context: null,
       canvas: null,
-      tab: 'player1'
+      tab: "player1",
     };
   },
 
   mounted() {
     const canvas = this.$refs.canvasRef;
-    const context = this.$refs.canvasRef.getContext('2d');
+    const context = this.$refs.canvasRef.getContext("2d");
     if (context !== null) {
       this.context = context;
       this.canvas = canvas;
       this.drawBoard(context);
 
-      canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
-      canvas.addEventListener('click', (event) => this.handleMouseClick(event));
+      canvas.addEventListener("mousemove", (event) => this.handleMouseMove(event));
+      canvas.addEventListener("click", (event) => this.handleMouseClick(event));
     }
   },
 
@@ -147,16 +155,17 @@ export default {
   },
 
   methods: {
-    ...mapActions('game', [
-      'setCurrentPlayerSelectedPieceId',
-      'updateCurrentPlayerRemainingPieces',
-      'addReplayState',
+    ...mapActions("game", [
+      "setCurrentPlayerSelectedPieceId",
+      "updateCurrentPlayerRemainingPieces",
+      "addReplayState",
+      "updateCurrentPlayerId",
     ]),
 
     notifyInvalid() {
       this.$q.notify({
-        type: 'warning',
-        message: '現在のマス目にブロックを置けません！',
+        type: "warning",
+        message: "現在のマス目にブロックを置けません！",
         timeout: 1000,
       });
     },
@@ -178,7 +187,9 @@ export default {
       });
 
       // change player ID
-      this.currentPlayerId = (this.currentPlayerId + 1) % this.numberOfPlayers;
+      this.updateCurrentPlayerId({
+        currentPlayerId: this.currentPlayerId,
+      });
 
       this.drawBoard(this.context);
     },
@@ -198,7 +209,8 @@ export default {
         let hori_i = row + HORIZONTAL_DIR[0];
         let hori_j = col + HORIZONTAL_DIR[1];
         if (this.inBounds(hori_i, hori_j)) {
-          isValid = isValid && this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1;
+          isValid =
+            isValid && this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1;
         }
       }
       return isValid;
@@ -247,11 +259,11 @@ export default {
         this.drawBoard(this.context);
 
         if (this.inBounds(row, col)) {
-          this.context.strokeStyle = 'white';
+          this.context.strokeStyle = "white";
           this.context.lineWidth = 2;
 
-          let currPiece =
-            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+          let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+            .pieceCoords;
           this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
 
           // draw center piece
@@ -287,7 +299,8 @@ export default {
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
 
-        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+          .pieceCoords;
 
         if (this.isValidMove(currPiece, row, col)) {
           // place center piece
@@ -301,7 +314,9 @@ export default {
           }
 
           // reinitialize availablePlayerMoves for current player
-          this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
+          this.availablePlayerMoves[this.currentPlayerId] = new Array(
+            this.boardSettings.totalCells
+          )
             .fill(0)
             .map(() => new Array(this.boardSettings.totalCells).fill(0));
           // recompute availablePlayerMoves for current player
@@ -314,7 +329,10 @@ export default {
                   let diag_i = i + DIAG_DIR[0];
                   let diag_j = j + DIAG_DIR[1];
 
-                  if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
+                  if (
+                    this.inBounds(diag_i, diag_j) &&
+                    this.gameBoard[diag_i][diag_j] === 0
+                  ) {
                     canPlace = this.checkHorizontalDirs(diag_i, diag_j);
                   }
 
@@ -337,7 +355,7 @@ export default {
     drawBoard(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-      context.strokeStyle = 'white';
+      context.strokeStyle = "white";
       context.lineWidth = 2;
 
       for (let i = 0; i < this.boardSettings.totalCells; i++) {
@@ -351,7 +369,7 @@ export default {
               this.boardSettings.cellWidth
             );
           } else if (this.availablePlayerMoves[this.currentPlayerId][i][j] === 1) {
-            context.fillStyle = '#a7adb5';
+            context.fillStyle = "#a7adb5";
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
@@ -359,7 +377,7 @@ export default {
               this.boardSettings.cellWidth
             );
           } else {
-            context.fillStyle = '#CDD5DF';
+            context.fillStyle = "#CDD5DF";
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
@@ -396,11 +414,11 @@ canvas {
   top: 5%;
   left: 28%;
 }
-.board-area{
+.board-area {
   width: 100%;
 }
-@media screen and (min-width:1023px) {
-  .board-area{
+@media screen and (min-width: 1023px) {
+  .board-area {
     height: calc(100vh - 50px);
   }
 }
