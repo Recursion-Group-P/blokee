@@ -1,25 +1,30 @@
 <template>
   <div>
-    <div class="row justify-between q-mb-sm">
-      <q-btn outline color="blue-5" round icon="flip" @click="flipPiece" />
-      <q-btn
-        outline
-        color="blue-5"
-        round
-        icon="rotate_90_degrees_ccw"
-        @click="turnPiece90DegreeCounterClockwise"
-      />
-      <q-btn
-        outline
-        color="blue-5"
-        round
-        icon="rotate_90_degrees_cw"
-        @click="turnPiece90DegreeClockwise"
-      />
-      <q-btn outline color="grey-7" round icon="close" @click="cancelPiece" />
-    </div>
-    <div class="bg-grey-2 rounded-borders q-pa-sm row justify-center">
-      <canvas ref="canvas" width="250" height="250"></canvas>
+    <div>
+      <div class="row justify-between q-mb-sm">
+        <q-btn outline color="blue-5" round icon="flip" @click="flipPiece" />
+        <q-btn
+          outline
+          color="blue-5"
+          round
+          icon="rotate_90_degrees_ccw"
+          @click="turnPiece90DegreeCounterClockwise"
+        />
+        <q-btn
+          outline
+          color="blue-5"
+          round
+          icon="rotate_90_degrees_cw"
+          @click="turnPiece90DegreeClockwise"
+        />
+        <q-btn outline color="grey-7" round icon="close" @click="cancelPiece" />
+      </div>
+      <div
+        class="bg-grey-2 rounded-borders q-pa-sm row justify-center selected-piece-focus"
+        :style="{ color: players[this.playerId].color }"
+      >
+        <canvas ref="canvas" width="250" height="250"></canvas>
+      </div>
     </div>
   </div>
 </template>
@@ -47,8 +52,8 @@ export default Vue.extend({
   methods: {
     ...mapActions("game", [
       "setCurrentPlayerSelectedPieceId",
-      "updateCurrentPieceCoordinate",
-      "updatePlayerScore",
+      "updateCurrentPieceCoordinateAfterFlip",
+      "updateCurrentPieceCoordinateAfterRotation",
     ]),
 
     cancelPiece() {
@@ -68,28 +73,6 @@ export default Vue.extend({
 
       // Clear drawing
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Flip
-      if (flip === true) {
-        ctx.translate(125, 125);
-        if (this.currentDegree === 0 || this.currentDegree === 180) ctx.scale(-1, 1);
-        if (this.currentDegree === 90 || this.currentDegree === 270) ctx.scale(1, -1);
-        ctx.translate(-125, -125);
-      }
-
-      // Rotate
-      if (rotateDirection !== null) {
-        if (rotateDirection === "cw") {
-          ctx.translate(125, 125);
-          ctx.rotate((90 * Math.PI) / 180);
-          ctx.translate(-125, -125);
-        }
-        if (rotateDirection === "ccw") {
-          ctx.translate(125, 125);
-          ctx.rotate((-90 * Math.PI) / 180);
-          ctx.translate(-125, -125);
-        }
-      }
 
       // Draw center piece
       ctx.fillRect(
@@ -124,55 +107,48 @@ export default Vue.extend({
 
     // Alter piece
     flipPiece() {
-      let flip = true;
-      this.drawPiece(this.pieceCoordinate, flip);
-      // Update isFlipped
-      this.isFlipped = !this.isFlipped;
-
-      this.updateCurrentPieceCoordinate({
+      // 座標の更新
+      this.updateCurrentPieceCoordinateAfterFlip({
         currentPlayerId: this.playerId,
-        isFlipped: this.isFlipped,
-        currentDegree: this.currentDegree,
         currentPiece: this.currPlayerSelectedPieceId,
       });
+      // 更新した座標でピースを描画
+      this.drawPiece(this.pieceCoordinate);
     },
     turnPiece90DegreeClockwise() {
       let rotateDirection = "cw"; // cw stands for "clock wise"
-      this.drawPiece(this.pieceCoordinate, false, rotateDirection);
-      // Update currentDegree
-      this.currentDegree += 90;
-      if (this.currentDegree == 360) this.currentDegree = 0;
-
-      this.updateCurrentPieceCoordinate({
+      // 座標の更新
+      this.updateCurrentPieceCoordinateAfterRotation({
         currentPlayerId: this.playerId,
-        isFlipped: this.isFlipped,
-        currentDegree: 90,
+        rotateDirection: rotateDirection,
         currentPiece: this.currPlayerSelectedPieceId,
       });
+      // 更新した座標でピースを描画
+      this.drawPiece(this.pieceCoordinate);
     },
     turnPiece90DegreeCounterClockwise() {
-      let rotateDirection = "ccw"; // cw stands for "counter clock wise"
-      this.drawPiece(this.pieceCoordinate, false, rotateDirection);
-      // Update currentDegree
-      this.currentDegree -= 90;
-      if (this.currentDegree < 0) this.currentDegree = 360 + this.currentDegree;
-
-      this.updateCurrentPieceCoordinate({
+      let rotateDirection = "ccw"; // ccw stands for "counter clock wise"
+      // 座標の更新
+      this.updateCurrentPieceCoordinateAfterRotation({
         currentPlayerId: this.playerId,
-        isFlipped: this.isFlipped,
-        currentDegree: -90,
+        rotateDirection: rotateDirection,
         currentPiece: this.currPlayerSelectedPieceId,
       });
+      // 更新した座標でピースを描画
+      this.drawPiece(this.pieceCoordinate);
     },
   },
   mounted() {
     this.pieceCoordinate = this.players[this.playerId].remainingPieces[
       this.currPlayerSelectedPieceId
-    ];
+    ].pieceCoords;
     this.drawPiece(this.pieceCoordinate);
   },
 });
 </script>
 
-<style lang=""></style>
-
+<style>
+.selected-piece-focus {
+  box-shadow: inset 0 0 6px 2px;
+}
+</style>
