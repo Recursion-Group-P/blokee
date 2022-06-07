@@ -1,15 +1,16 @@
 import { Player } from 'src/model/player';
 import { PLAYER_COLORS } from 'src/constants';
+import { Platform } from 'quasar'
 
 const state = {
   numberOfPlayers: 2,
   timeForEachPlayer: '10 min', // ["5 min", "10 min", "20 min"]
   startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
   boardSettings: {
-    width: 490,
-    height: 490,
+    width: Platform.is.desktop ? 490 : 350,
+    height: Platform.is.desktop ? 490 : 350,
     totalCells: 14,
-    cellWidth: 35,
+    cellWidth: Platform.is.desktop ? 35 : 25,
     startingPositions: [
       [0, 0],
       [13, 13],
