@@ -36,48 +36,50 @@
         </q-footer>
 
         <q-drawer
-            v-model="leftDrawerOpen"
-            :show-if-above="false"
-            :breakpoint="767"
-            :width="250"
-            bordered
-            content-class="bg-blue-2"
+          v-model="leftDrawerOpen"
+          :show-if-above="false"
+          :breakpoint="767"
+          :width="250"
+          overlay
+          elevated
+          content-class="bg-blue-2"
         >
-            <q-list>
-                <q-item-label header class="text-grey-8"> Navigation </q-item-label>
-                <q-item
-                    v-for="(nav, index) in filteredNavs"
-                    :key="index"
-                    :to="nav.to"
-                    exact
-                    clickable
-                >
-                    <q-item-section avatar>
-                        <q-icon :name="nav.icon" />
-                    </q-item-section>
 
-                    <q-item-section>
-                        <q-item-label>{{ nav.label }}</q-item-label>
-                        <q-item-label caption>
-                            {{ nav.description }}
-                        </q-item-label>
-                    </q-item-section>
-                </q-item>
+          <q-list>
+              <q-item-label header class="text-grey-8"> Navigation </q-item-label>
+              <q-item
+                  v-for="(nav, index) in filteredNavs"
+                  :key="index"
+                  :to="nav.to"
+                  exact
+                  clickable
+              >
+                  <q-item-section avatar>
+                      <q-icon :name="nav.icon" />
+                  </q-item-section>
 
-                <q-item
-                    v-if="$q.platform.is.electron"
-                    @click="quitApp"
-                    class="absolute-bottom"
-                    clickable
-                >
-                    <q-item-section avatar>
-                        <q-icon name="power_settings_new" />
-                    </q-item-section>
-                    <q-item-section>
-                        <q-item-label>Quit</q-item-label>
-                    </q-item-section>
-                </q-item>
-            </q-list>
+                  <q-item-section>
+                      <q-item-label>{{ nav.label }}</q-item-label>
+                      <q-item-label caption>
+                          {{ nav.description }}
+                      </q-item-label>
+                  </q-item-section>
+              </q-item>
+
+              <q-item
+                  v-if="$q.platform.is.electron"
+                  @click="quitApp"
+                  class="absolute-bottom"
+                  clickable
+              >
+                  <q-item-section avatar>
+                      <q-icon name="power_settings_new" />
+                  </q-item-section>
+                  <q-item-section>
+                      <q-item-label>Quit</q-item-label>
+                  </q-item-section>
+              </q-item>
+          </q-list>
         </q-drawer>
 
         <q-page-container>
