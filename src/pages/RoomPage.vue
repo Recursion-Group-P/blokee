@@ -1,31 +1,42 @@
 <template>
   <div class="row wrap room">
-    <div class="row items-center justify-around" style="height: calc(100vh - 50px); width: 100%">
-      <div class="col-12 col-sm-3 flex items-center">
-        <player-area :playerId="0" style="height: 50%" />
-        <player-area v-if="players.length > 2" :playerId="2" style="height: 50%" />
+    <div class="row items-center" style="height: calc(100vh - 50px)">
+      <div class="col-12 col-sm-3 flex">
+        <player-area :playerId="0" ref="player-area-0" />
+        <player-area v-if="players.length > 2" :playerId="2" ref="player-area-2" />
       </div>
 
       <!-- board -->
       <div class="col-12 col-sm-4 text-center">
         <div class="full-width row justify-center items-center">
-          <canvas ref="canvasRef" :width="boardSettings.width" :height="boardSettings.height" />
+          <canvas
+            ref="canvasRef"
+            :width="boardSettings.width"
+            :height="boardSettings.height"
+          />
         </div>
+        <h4>
+          Player {{ currentPlayerId + 1 }}: Selected Piece ID = ({{
+            currPlayerSelectedPieceId
+          }})
+        </h4>
         <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
       </div>
 
       <div class="col-12 col-sm-3 flex justify-end">
-        <player-area :playerId="1" style="height: 50%" />
-        <player-area v-if="players.length > 2" :playerId="3" style="height: 50%" />
+        <player-area :playerId="1" ref="player-area-1" />
+        <player-area v-if="players.length > 2" :playerId="3" ref="player-area-3" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import PlayerArea from 'src/components/PlayerArea.vue';
+import PlayerArea from "src/components/PlayerArea.vue";
+import { PLAYER_COLORS } from "src/constants";
 import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions } from "vuex";
+import Vue from "vue";
 
 //TODO: Placing pieces on a grid
 // 1. when piece is clicked -> selectedPieceId = selected piece idx (store in player object vuex?)
@@ -33,13 +44,18 @@ import { mapGetters, mapActions } from 'vuex';
 // 3. use mouseclick event to place piece -> use current x, y as center piece position
 // 4. determine whether piece can be placed -> if true update gameBoard and deselect piece (delete piece from remainingPieces)
 
-export default {
+export default Vue.extend({
   components: {
-    'player-area': PlayerArea,
+    "player-area": PlayerArea,
   },
 
   computed: {
-    ...mapGetters('game', ['timeForEachPlayer', 'numberOfPlayers', 'boardSettings', 'players']),
+    ...mapGetters("game", [
+      "timeForEachPlayer",
+      "numberOfPlayers",
+      "boardSettings",
+      "players",
+    ]),
 
     currPlayer() {
       return this.players[this.currentPlayerId];
@@ -78,7 +94,7 @@ export default {
     };
   },
 
-  mounted() {
+ mounted() {
     const canvas = this.$refs.canvasRef;
     const context = this.$refs.canvasRef.getContext('2d');
     if (context !== null) {
@@ -89,6 +105,8 @@ export default {
       canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
       canvas.addEventListener('click', (event) => this.handleMouseClick(event));
     }
+    // player-areaのタイマー開始
+    this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
   },
 
   watch: {
@@ -103,10 +121,11 @@ export default {
   },
 
   methods: {
-    ...mapActions('game', [
-      'setCurrentPlayerSelectedPieceId',
-      'updateCurrentPlayerRemainingPieces',
-      'addReplayState',
+    ...mapActions("game", [
+      "setCurrentPlayerSelectedPieceId",
+      "updateCurrentPlayerRemainingPieces",
+      "updatePlayerScore",
+      
     ]),
 
     notifyInvalid() {
@@ -118,6 +137,7 @@ export default {
     },
 
     changePlayerTurn() {
+      this.$refs["player-area-" + [this.currentPlayerId]].stopTimer();
       // add replay state
       this.addReplayState({
         boardState: this.gameBoard.map((arr) => arr.slice()),
@@ -137,6 +157,8 @@ export default {
       this.currentPlayerId = (this.currentPlayerId + 1) % this.numberOfPlayers;
 
       this.drawBoard(this.context);
+      // 次のプレイヤーのタイマー開始
+      this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
     },
 
     inBounds(row, col) {
@@ -293,7 +315,7 @@ export default {
     drawBoard(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-      context.strokeStyle = 'white';
+      context.strokeStyle = "white";
       context.lineWidth = 2;
 
       for (let i = 0; i < this.boardSettings.totalCells; i++) {
@@ -307,7 +329,7 @@ export default {
               this.boardSettings.cellWidth
             );
           } else if (this.availablePlayerMoves[this.currentPlayerId][i][j] === 1) {
-            context.fillStyle = '#a7adb5';
+            context.fillStyle = "#a7adb5";
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
@@ -315,7 +337,7 @@ export default {
               this.boardSettings.cellWidth
             );
           } else {
-            context.fillStyle = '#CDD5DF';
+            context.fillStyle = "#CDD5DF";
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
@@ -334,7 +356,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

@@ -8,10 +8,30 @@
       <div class="col-10 col-md-3 text-center">
         <q-card class="my-card">
           <q-card-section>
-            <q-select v-model="numberOfPlayers" :options="numberOfPlayersOptions" label="Number of players" />
-            <q-select v-model="timeForEachPlayer" :options="timeForEachPlayerOptions" label="Time for each player" />
-            <q-select v-model="startPosition" :options="startPositionOptions" label="Start position" />
-            <q-btn class="q-mt-lg" @click="gameStart" to="/room" unelevated rounded color="primary" label="Game Start" />
+            <q-select
+              v-model="numberOfPlayers"
+              :options="numberOfPlayersOptions"
+              label="Number of players"
+            />
+            <q-select
+              v-model="timeForEachPlayer"
+              :options="timeForEachPlayerOptions"
+              label="Time for each player"
+            />
+            <q-select
+              v-model="startPosition"
+              :options="startPositionOptions"
+              label="Start position"
+            />
+            <q-btn
+              class="q-mt-lg"
+              @click="gameStart"
+              to="/room"
+              unelevated
+              rounded
+              color="primary"
+              label="Game Start"
+            />
           </q-card-section>
         </q-card>
       </div>
@@ -20,27 +40,31 @@
 </template>
 
 <script>
-  import { Config } from "../config/index";
-  import { mapActions } from 'vuex';
-  export default {
-    name: "SettingsPage",
-    data() {
-      return {
-        numberOfPlayers: Config.numberOfPlayers,
-        numberOfPlayersOptions: Config.numberOfPlayersOptions,
-        timeForEachPlayer: Config.timeForEachPlayer,
-        timeForEachPlayerOptions: Config.timeForEachPlayerOptions,
-        startPosition: Config.startPosition,
-        startPositionOptions: Config.startPositionOptions,
-      };
+import { Config } from "../config/index";
+import { mapActions } from "vuex";
+export default {
+  name: "SettingsPage",
+  data() {
+    return {
+      numberOfPlayers: Config.numberOfPlayers,
+      numberOfPlayersOptions: Config.numberOfPlayersOptions,
+      timeForEachPlayer: Config.timeForEachPlayer,
+      timeForEachPlayerOptions: Config.timeForEachPlayerOptions,
+      startPosition: Config.startPosition,
+      startPositionOptions: Config.startPositionOptions,
+    };
+  },
+  methods: {
+    ...mapActions("game", ["setGameSettings"]),
+    gameStart() {
+      this.setGameSettings({
+        numberOfPlayers: this.numberOfPlayers,
+        timeForEachPlayer: this.timeForEachPlayer["value"],
+        startPosition: this.startPosition,
+      });
     },
-    methods: {
-      ...mapActions('game', ['setGameSettings']),
-      gameStart() {
-          this.setGameSettings({ numberOfPlayers: this.numberOfPlayers, timeForEachPlayer: this.timeForEachPlayer, startPosition: this.startPosition });
-      },
-    },
-  };
+  },
+};
 </script>
 
 <style></style>
