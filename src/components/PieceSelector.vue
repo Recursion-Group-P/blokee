@@ -1,11 +1,12 @@
 <template>
   <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
     <canvas
-      v-for="(piece, pieceId) in players[playerId].remainingPieces"
+      v-for="pieceId in currPlayerRemainingPieces"
       :key="pieceId"
       :ref="'canvas' + pieceId"
       class="cursor-pointer"
-      style="width: 25%"
+      style="width: 20%"
+      height="250px"
       @click="selectPiece(pieceId)"
     ></canvas>
   </div>
@@ -22,7 +23,7 @@ export default {
   data() {
     return {
       cellSize: 50,
-      startDrawCoordinate: { x: 100, y: 50 },
+      startDrawCoordinate: { x: 100, y: 100 },
     };
   },
   methods: {
@@ -81,10 +82,3 @@ export default {
   },
 };
 </script>
-
-<style>
-canvas {
-  image-rendering: optimizeSpeed;
-  image-rendering: pixelated;
-}
-</style>

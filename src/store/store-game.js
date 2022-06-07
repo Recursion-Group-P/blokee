@@ -1,15 +1,15 @@
-import { Player } from "src/model/Player";
-import { PLAYER_COLORS } from "src/constants";
+import { Player } from 'src/model/player';
+import { PLAYER_COLORS } from 'src/constants';
 
 const state = {
   numberOfPlayers: 2,
   timeForEachPlayer: 600, // 600 = 10mins
   startPosition: "Corner", // ["Center", "Corner", "Anywhere"]
   boardSettings: {
-    width: 420,
-    height: 420,
+    width: 490,
+    height: 490,
     totalCells: 14,
-    cellWidth: 30,
+    cellWidth: 35,
     startingPositions: [
       [0, 0],
       [13, 13],
@@ -17,6 +17,12 @@ const state = {
   },
   // currentPlayerId: 0,
   players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
+  currentPlayerIndex: 0,
+  replay: {
+    boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
+    usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
+    players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+  },
 };
 
 const mutations = {
@@ -47,7 +53,7 @@ const mutations = {
 
   updateCurrentPlayerRemainingPieces(state, payload) {
     const currPlayer = state.players[payload.currentPlayerId];
-    currPlayer.remainingPieces.splice(currPlayer.selectedPieceId, 1);
+    currPlayer.remainingPieces[currPlayer.selectedPieceId].isUsed = true;
   },
 
   updateCurrentPieceCoordinate(state, payload) {
@@ -84,6 +90,20 @@ const mutations = {
     console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
     state.players[payload["currentPlayerId"]].outOfGame = true;
     console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
+  setReplayState(state, payload) {
+    state.replay.boardStates = [payload.boardState];
+    state.replay.usedPieces = payload.usedPiece;
+    state.replay.players = payload.players;
+  },
+
+  addReplayState(state, payload) {
+    state.replay.boardStates.push(payload.boardState);
+    state.replay.usedPieces.push(payload.usedPiece);
+  },
+
+  updateReplayCurrentPlayerRemainingPieces(state, payload) {
+    const currPlayer = state.replay.players[payload.currentPlayerId];
+    currPlayer.remainingPieces[payload.usedPieceId].isUsed = payload.isUsed;
   },
 };
 
@@ -97,10 +117,10 @@ const actions = {
           [13, 13],
         ];
       const payload = {
-        width: 420,
-        height: 420,
+        width: 490,
+        height: 490,
         totalCells: 14,
-        cellWidth: 30,
+        cellWidth: 35,
         startingPositions,
       };
       commit("setBoardSettings", payload);
@@ -108,6 +128,11 @@ const actions = {
         new Player(PLAYER_COLORS[0], timeForEachPlayer),
         new Player(PLAYER_COLORS[1], timeForEachPlayer),
       ]);
+      commit('setReplayState', {
+        boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
+        usedPiece: [],
+        players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+      });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
       if (startPosition == "Corner")
@@ -118,10 +143,10 @@ const actions = {
           [19, 19],
         ];
       const payload = {
-        width: 420,
-        height: 420,
+        width: 600,
+        height: 600,
         totalCells: 20,
-        cellWidth: 21,
+        cellWidth: 30,
         startingPositions,
       };
       commit("setBoardSettings", payload);
@@ -131,6 +156,16 @@ const actions = {
         new Player(PLAYER_COLORS[2], timeForEachPlayer),
         new Player(PLAYER_COLORS[3], timeForEachPlayer),
       ]);
+      commit('setReplayState', {
+        boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
+        usedPiece: [],
+        players: [
+          new Player(PLAYER_COLORS[0]),
+          new Player(PLAYER_COLORS[1]),
+          new Player(PLAYER_COLORS[2]),
+          new Player(PLAYER_COLORS[3]),
+        ],
+      });
     }
     commit("setGameSettings", {
       numberOfPlayers: numberOfPlayers,
@@ -165,6 +200,14 @@ const actions = {
   updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
     commit("updatePlayerOutOfGame", { currentPlayerId });
   },
+
+  addReplayState({ commit }, { boardState, usedPiece }) {
+    commit('addReplayState', { boardState, usedPiece });
+  },
+
+  updateReplayCurrentPlayerRemainingPieces({ commit }, { currentPlayerId, usedPieceId, isUsed }) {
+    commit('updateReplayCurrentPlayerRemainingPieces', { currentPlayerId, usedPieceId, isUsed });
+  },
 };
 
 const getters = {
@@ -186,6 +229,10 @@ const getters = {
 
   players(state) {
     return state.players;
+  },
+
+  replay(state) {
+    return state.replay;
   },
 };
 

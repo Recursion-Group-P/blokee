@@ -42,8 +42,6 @@ export default Vue.extend({
       cellSize: 30,
       startDrawCoordinate: { x: 110, y: 110 },
       pieceCoordinate: null,
-      isFlipped: false,
-      currentDegree: 0,
     };
   },
   methods: {
@@ -61,7 +59,7 @@ export default Vue.extend({
     },
 
     // Draw the selected piece
-    drawPiece(pieceCoordinate, flip = false, rotateDirection = null) {
+    drawPiece(pieceCoordinate) {
       let canvas = this.$refs.canvas;
       let ctx = canvas.getContext("2d");
       ctx.fillStyle = this.players[this.playerId].color;
@@ -177,3 +175,4 @@ export default Vue.extend({
 </script>
 
 <style lang=""></style>
+

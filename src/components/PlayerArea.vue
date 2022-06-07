@@ -1,5 +1,8 @@
 <template>
-  <div class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area" style="width: 100%">
+  <div
+    class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area"
+    :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
+  >
     <div class="row justify-between" style="height: 50px">
       <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
       <div>{{ "score: " + this.players[this.playerId].score }}</div>
@@ -66,7 +69,6 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters("game", ["players"]),
-
     currPlayerSelectedPieceId() {
       return this.players[this.playerId].selectedPieceId;
     },
@@ -122,7 +124,9 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-.player-area {
-  width: 50%;
+@media screen and (max-width: 768px) {
+  .player-area {
+    width: 100% !important;
+  }
 }
 </style>
