@@ -8,9 +8,9 @@
       <div class="col-10 col-md-3 text-center">
         <q-card class="my-card">
           <q-card-section>
-            <q-select v-model="numberOfPlayers" :options="numberOfPlayersOptions" label="Number of players" />
-            <q-select v-model="timeForEachPlayer" :options="timeForEachPlayerOptions" label="Time for each player" />
-            <q-select v-model="startPosition" :options="startPositionOptions" label="Start position" />
+            <q-select v-model="selectedNumberOfPlayers" :options="numberOfPlayersOptions" label="Number of players" />
+            <q-select v-model="selectedTime" :options="timeForEachPlayerOptions" label="Time for each player" />
+            <q-select v-model="selectedStartPosition" :options="startPositionOptions" label="Start position" />
             <q-btn class="q-mt-lg" @click="gameStart" to="/room" unelevated rounded color="primary" label="Game Start" />
           </q-card-section>
         </q-card>
@@ -26,18 +26,18 @@
     name: "SettingsPage",
     data() {
       return {
-        numberOfPlayers: Config.numberOfPlayers,
+        selectedNumberOfPlayers: Config.numberOfPlayers,
         numberOfPlayersOptions: Config.numberOfPlayersOptions,
-        timeForEachPlayer: Config.timeForEachPlayer,
+        selectedTime: Config.timeForEachPlayers,
         timeForEachPlayerOptions: Config.timeForEachPlayerOptions,
-        startPosition: Config.startPosition,
+        selectedStartPosition: Config.startPosition,
         startPositionOptions: Config.startPositionOptions,
       };
     },
     methods: {
       ...mapActions('game', ['setGameSettings']),
       gameStart() {
-          this.setGameSettings({ numberOfPlayers: this.numberOfPlayers, timeForEachPlayer: this.timeForEachPlayer, startPosition: this.startPosition });
+          this.setGameSettings({ numberOfPlayers: this.numberOfPlayers, timeForEachPlayer: Config.timeForEachPlayerObjects[this.selectedTime], startPosition: this.startPosition });
       },
     },
   };

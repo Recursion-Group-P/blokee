@@ -22,25 +22,24 @@
 
           <q-tab-panels v-model="tab" animated>
             <q-tab-panel name="player1">
-              <player-area :playerId="0" />
+              <player-area :playerId="0" ref="player-area-0" />
             </q-tab-panel>
 
             <q-tab-panel name="player2">
-              <player-area :playerId="1" />
+              <player-area :playerId="1" ref="player-area-1" />
             </q-tab-panel>
 
             <q-tab-panel name="player3">
-              <player-area v-if="players.length > 2" :playerId="2" />
+              <player-area v-if="players.length > 2" :playerId="2" ref="player-area-2" />
             </q-tab-panel>
 
             <q-tab-panel name="player4">
-              <player-area v-if="players.length > 2" :playerId="3" />
+              <player-area v-if="players.length > 2" :playerId="3" ref="player-area-3" />
             </q-tab-panel>
           </q-tab-panels>
         </q-card>
       </div>
     </div>
-
     <div class="row items-center justify-evenly board-area">
       <div class="col-12 col-sm-3 flex items-center gt-sm">
         <player-area :playerId="0" style="height: 50%" />
@@ -49,6 +48,7 @@
 
       <!-- board -->
       <div class="col-12 col-sm-4 text-center">
+        <game-over-window />
         <div class="full-width row justify-center items-center">
           <canvas
             ref="canvasRef"
@@ -69,9 +69,10 @@
 </template>
 
 <script>
-import PlayerArea from "src/components/PlayerArea.vue";
-import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from "src/constants";
-import { mapGetters, mapActions } from "vuex";
+import PlayerArea from 'src/components/PlayerArea.vue';
+import GameOverWindow from 'src/components/GameOverWindow.vue';
+import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
+import { mapGetters, mapActions } from 'vuex';
 
 //TODO: Placing pieces on a grid
 // 1. when piece is clicked -> selectedPieceId = selected piece idx (store in player object vuex?)
@@ -81,7 +82,8 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
   components: {
-    "player-area": PlayerArea,
+    'player-area': PlayerArea,
+    'game-over-window': GameOverWindow,
   },
 
   computed: {
@@ -138,9 +140,13 @@ export default {
       this.canvas = canvas;
       this.drawBoard(context);
 
-      canvas.addEventListener("mousemove", (event) => this.handleMouseMove(event));
-      canvas.addEventListener("click", (event) => this.handleMouseClick(event));
+      canvas.addEventListener('touchmove', (event) => this.handleTouchMove(event));
+      canvas.addEventListener('touchend', (event) => this.handleTouchEnd(event));
+      canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
+      canvas.addEventListener('click', (event) => this.handleMouseClick(event));
     }
+    // player-areaのタイマー開始
+    this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
   },
 
   watch: {
@@ -186,12 +192,18 @@ export default {
         selectedPieceId: -1,
       });
 
+      // タイマー停止
+      this.$refs["player-area-" + [this.currentPlayerId]].stopTimer();
+
       // change player ID
       this.updateCurrentPlayerId({
         currentPlayerId: this.currentPlayerId,
       });
 
       this.drawBoard(this.context);
+
+      // 次のプレイヤーのタイマー開始
+      this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
     },
 
     inBounds(row, col) {
@@ -333,6 +345,109 @@ export default {
                     this.inBounds(diag_i, diag_j) &&
                     this.gameBoard[diag_i][diag_j] === 0
                   ) {
+                    canPlace = this.checkHorizontalDirs(diag_i, diag_j);
+                  }
+
+                  if (canPlace) {
+                    this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
+                  }
+                }
+              }
+            }
+          }
+          this.changePlayerTurn();
+        } else {
+          this.notifyInvalid();
+        }
+      }
+
+      this.drawBoard(this.context);
+    },
+
+    handleTouchMove(event) {
+      event.preventDefault();
+
+      if (this.isDragging) {
+        let mouseX = event.targetTouches[0].pageX - this.canvas.offsetLeft;
+        let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop - 50;
+
+        let cellWidth = this.boardSettings.cellWidth;
+        let row = Math.floor(mouseY / cellWidth);
+        let col = Math.floor(mouseX / cellWidth);
+
+        this.drawBoard(this.context);
+
+        if (this.inBounds(row, col)) {
+          this.context.strokeStyle = 'white';
+          this.context.lineWidth = 2;
+
+          let currPiece =
+            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+          this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
+
+          // draw center piece
+          this.context.fillRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
+          this.context.strokeRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
+
+          // draw other pieces
+          for (let i = 0; i < currPiece.length; i++) {
+            // currPiece = [x, y] where x is relative row, y is relative col
+            this.context.fillRect(
+              col * cellWidth + currPiece[i][1] * cellWidth,
+              row * cellWidth + currPiece[i][0] * cellWidth,
+              cellWidth,
+              cellWidth
+            );
+            this.context.strokeRect(
+              col * cellWidth + currPiece[i][1] * cellWidth,
+              row * cellWidth + currPiece[i][0] * cellWidth,
+              cellWidth,
+              cellWidth
+            );
+          }
+        }
+      }
+    },
+
+    handleTouchEnd(event) {
+      event.preventDefault();
+
+      if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
+        let mouseX = event.changedTouches[0].pageX - this.canvas.offsetLeft;
+        let mouseY = event.changedTouches[0].pageY - this.canvas.offsetTop - 50;
+
+        let cellWidth = this.boardSettings.cellWidth;
+        let row = Math.floor(mouseY / cellWidth);
+        let col = Math.floor(mouseX / cellWidth);
+
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+
+        if (this.isValidMove(currPiece, row, col)) {
+          // place center piece
+          this.gameBoard[row][col] = this.currentPlayerId + 1;
+
+          // place other pieces
+          for (let i = 0; i < currPiece.length; i++) {
+            let curr_row = row + currPiece[i][0];
+            let curr_col = col + currPiece[i][1];
+            this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
+          }
+
+          // reinitialize availablePlayerMoves for current player
+          this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
+            .fill(0)
+            .map(() => new Array(this.boardSettings.totalCells).fill(0));
+          // recompute availablePlayerMoves for current player
+          for (let i = 0; i < this.boardSettings.totalCells; i++) {
+            for (let j = 0; j < this.boardSettings.totalCells; j++) {
+              if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
+                // check all corners for each piece
+                for (const DIAG_DIR of DIAG_DIRS) {
+                  let canPlace = false;
+                  let diag_i = i + DIAG_DIR[0];
+                  let diag_j = j + DIAG_DIR[1];
+
+                  if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
                     canPlace = this.checkHorizontalDirs(diag_i, diag_j);
                   }
 
