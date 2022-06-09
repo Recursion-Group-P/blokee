@@ -1,10 +1,10 @@
 <template>
   <div
-    class="rounded-borders shadow-1 q-ma-sm q-pa-md player-area"
+    class="rounded-borders shadow-1 q-pa-sm player-area"
     :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
   >
     <div class="row justify-start" style="height: 50px">
-      <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
+      <h6 class="q-ma-sm">Player {{ playerId + 1 }}</h6>
     </div>
     <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
       <canvas

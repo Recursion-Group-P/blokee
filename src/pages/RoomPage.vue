@@ -1,51 +1,30 @@
 <template>
   <div class="row wrap room">
-
-    <div class="q-pa-md q-mx-auto lt-md">
+    <div class="q-mx-auto lt-md">
       <div class="q-gutter-y-md" style="max-width: 400px">
-        <q-card flat>
-          <q-tabs
-            v-model="tab"
-            dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
-            align="justify"
-            narrow-indicator
-          >
-            <q-tab name="player1" label="player1" />
-            <q-tab name="player2" label="player2" />
-            <q-tab name="player3" label="player3" v-if="players.length > 2" />
-            <q-tab name="player4" label="player4" v-if="players.length > 2" />
-          </q-tabs>
+        <q-tab-panels swipeable v-model="tab" animated style="background-color: #f2f4f7">
+          <q-tab-panel class="q-pa-none q-px-sm" name="0">
+            <player-area :playerId="0" />
+          </q-tab-panel>
 
-          <q-separator />
+          <q-tab-panel class="q-pa-none q-px-sm" name="1">
+            <player-area :playerId="1" />
+          </q-tab-panel>
 
-          <q-tab-panels v-model="tab" animated>
-            <q-tab-panel name="player1">
-              <player-area :playerId="0" />
-            </q-tab-panel>
+          <q-tab-panel class="q-pa-none q-px-sm" name="2" v-if="players.length > 2">
+            <player-area :playerId="2" />
+          </q-tab-panel>
 
-            <q-tab-panel name="player2">
-              <player-area :playerId="1" />
-            </q-tab-panel>
-
-            <q-tab-panel name="player3">
-              <player-area v-if="players.length > 2" :playerId="2" />
-            </q-tab-panel>
-
-            <q-tab-panel name="player4">
-              <player-area v-if="players.length > 2" :playerId="3" />
-            </q-tab-panel>
-          </q-tab-panels>
-
-        </q-card>
+          <q-tab-panel class="q-pa-none q-px-sm" name="3" v-if="players.length > 2">
+            <player-area :playerId="3" />
+          </q-tab-panel>
+        </q-tab-panels>
       </div>
     </div>
 
     <div class="row items-center justify-evenly board-area">
-      <div class="col-12 col-sm-3 flex items-center gt-sm">
-        <player-area :playerId="0" style="height: 50%" />
+      <div class="col-12 col-sm-3 gt-sm">
+        <player-area class="q-mb-md" :playerId="0" style="height: 50%" />
         <player-area v-if="players.length > 2" :playerId="2" style="height: 50%" />
       </div>
 
@@ -54,13 +33,16 @@
         <div class="full-width row justify-center items-center">
           <canvas ref="canvasRef" :width="boardSettings.width" :height="boardSettings.height" />
         </div>
-        <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
       </div>
 
       <div class="col-12 col-sm-3 flex justify-end gt-sm">
-        <player-area :playerId="1" style="height: 50%" />
+        <player-area class="q-mb-md" :playerId="1" style="height: 50%" />
         <player-area v-if="players.length > 2" :playerId="3" style="height: 50%" />
       </div>
+
+      <q-btn class="q-mt-lg" to="/replay" style="position: absolute; bottom: 20px"
+        >goto replay</q-btn
+      >
     </div>
   </div>
 </template>
@@ -69,6 +51,7 @@
 import PlayerArea from 'src/components/PlayerArea.vue';
 import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
 import { mapGetters, mapActions } from 'vuex';
+import { Platform } from 'quasar';
 
 //TODO: Placing pieces on a grid
 // 1. when piece is clicked -> selectedPieceId = selected piece idx (store in player object vuex?)
@@ -114,11 +97,12 @@ export default {
 
   data() {
     return {
+      showTip: true,
       currentPlayerId: 0,
       isDragging: false,
       context: null,
       canvas: null,
-      tab: 'player1'
+      tab: '0',
     };
   },
 
@@ -130,6 +114,8 @@ export default {
       this.canvas = canvas;
       this.drawBoard(context);
 
+      canvas.addEventListener('touchmove', (event) => this.handleTouchMove(event));
+      canvas.addEventListener('touchend', (event) => this.handleTouchEnd(event));
       canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
       canvas.addEventListener('click', (event) => this.handleMouseClick(event));
     }
@@ -141,6 +127,18 @@ export default {
         this.isDragging = false;
         this.drawBoard(this.context);
       } else {
+        if (this.showTip) {
+          const message = Platform.is.desktop
+            ? 'ボード上でマウスカーソルを動かして選択したピースの配置を決め、クリックで確定します'
+            : 'ボード上で指をドラッグして選択したピースの配置を決め、指を放して確定します';
+          this.$q.notify({
+            type: 'info',
+            message,
+            timeout: 0,
+            closeBtn: true,
+          });
+          this.showTip = false;
+        }
         this.isDragging = true;
       }
     },
@@ -179,6 +177,7 @@ export default {
 
       // change player ID
       this.currentPlayerId = (this.currentPlayerId + 1) % this.numberOfPlayers;
+      this.tab = this.currentPlayerId.toString();
 
       this.drawBoard(this.context);
     },
@@ -238,7 +237,9 @@ export default {
     handleMouseMove(event) {
       if (this.isDragging) {
         let mouseX = event.pageX - this.canvas.offsetLeft;
-        let mouseY = event.pageY - this.canvas.offsetTop - 50;
+        let mouseY = event.pageY - this.canvas.offsetTop;
+
+        console.log(mouseX, mouseY);
 
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
@@ -281,7 +282,110 @@ export default {
     handleMouseClick(event) {
       if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
         let mouseX = event.pageX - this.canvas.offsetLeft;
-        let mouseY = event.pageY - this.canvas.offsetTop - 50;
+        let mouseY = event.pageY - this.canvas.offsetTop;
+
+        let cellWidth = this.boardSettings.cellWidth;
+        let row = Math.floor(mouseY / cellWidth);
+        let col = Math.floor(mouseX / cellWidth);
+
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+
+        if (this.isValidMove(currPiece, row, col)) {
+          // place center piece
+          this.gameBoard[row][col] = this.currentPlayerId + 1;
+
+          // place other pieces
+          for (let i = 0; i < currPiece.length; i++) {
+            let curr_row = row + currPiece[i][0];
+            let curr_col = col + currPiece[i][1];
+            this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
+          }
+
+          // reinitialize availablePlayerMoves for current player
+          this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
+            .fill(0)
+            .map(() => new Array(this.boardSettings.totalCells).fill(0));
+          // recompute availablePlayerMoves for current player
+          for (let i = 0; i < this.boardSettings.totalCells; i++) {
+            for (let j = 0; j < this.boardSettings.totalCells; j++) {
+              if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
+                // check all corners for each piece
+                for (const DIAG_DIR of DIAG_DIRS) {
+                  let canPlace = false;
+                  let diag_i = i + DIAG_DIR[0];
+                  let diag_j = j + DIAG_DIR[1];
+
+                  if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
+                    canPlace = this.checkHorizontalDirs(diag_i, diag_j);
+                  }
+
+                  if (canPlace) {
+                    this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
+                  }
+                }
+              }
+            }
+          }
+          this.changePlayerTurn();
+        } else {
+          this.notifyInvalid();
+        }
+      }
+
+      this.drawBoard(this.context);
+    },
+
+    handleTouchMove(event) {
+      event.preventDefault();
+
+      if (this.isDragging) {
+        let mouseX = event.targetTouches[0].pageX - this.canvas.offsetLeft;
+        let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop;
+
+        let cellWidth = this.boardSettings.cellWidth;
+        let row = Math.floor(mouseY / cellWidth);
+        let col = Math.floor(mouseX / cellWidth);
+
+        this.drawBoard(this.context);
+
+        if (this.inBounds(row, col)) {
+          this.context.strokeStyle = 'white';
+          this.context.lineWidth = 2;
+
+          let currPiece =
+            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+          this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
+
+          // draw center piece
+          this.context.fillRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
+          this.context.strokeRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
+
+          // draw other pieces
+          for (let i = 0; i < currPiece.length; i++) {
+            // currPiece = [x, y] where x is relative row, y is relative col
+            this.context.fillRect(
+              col * cellWidth + currPiece[i][1] * cellWidth,
+              row * cellWidth + currPiece[i][0] * cellWidth,
+              cellWidth,
+              cellWidth
+            );
+            this.context.strokeRect(
+              col * cellWidth + currPiece[i][1] * cellWidth,
+              row * cellWidth + currPiece[i][0] * cellWidth,
+              cellWidth,
+              cellWidth
+            );
+          }
+        }
+      }
+    },
+
+    handleTouchEnd(event) {
+      event.preventDefault();
+
+      if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
+        let mouseX = event.changedTouches[0].pageX - this.canvas.offsetLeft;
+        let mouseY = event.changedTouches[0].pageY - this.canvas.offsetTop;
 
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
@@ -387,20 +491,11 @@ canvas {
   image-rendering: optimizeSpeed;
   image-rendering: pixelated;
 }
-
-.room {
-  position: relative;
-}
-.board {
-  position: absolute;
-  top: 5%;
-  left: 28%;
-}
-.board-area{
+.board-area {
   width: 100%;
 }
-@media screen and (min-width:1023px) {
-  .board-area{
+@media screen and (min-width: 1023px) {
+  .board-area {
     height: calc(100vh - 50px);
   }
 }

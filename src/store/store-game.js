@@ -1,16 +1,16 @@
-import { Player } from 'src/model/player';
+import { Player } from 'src/model/Player';
 import { PLAYER_COLORS } from 'src/constants';
-import { Platform } from 'quasar'
+import { Platform } from 'quasar';
 
 const state = {
   numberOfPlayers: 2,
   timeForEachPlayer: '10 min', // ["5 min", "10 min", "20 min"]
   startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
   boardSettings: {
-    width: Platform.is.desktop ? 490 : 350,
-    height: Platform.is.desktop ? 490 : 350,
+    width: Platform.is.desktop ? 490 : window.innerHeight > window.innerWidth ? 350 : 420,
+    height: Platform.is.desktop ? 490 : window.innerHeight > window.innerWidth ? 350 : 420,
     totalCells: 14,
-    cellWidth: Platform.is.desktop ? 35 : 25,
+    cellWidth: Platform.is.desktop ? 35 : window.innerHeight > window.innerWidth ? 25 : 30,
     startingPositions: [
       [0, 0],
       [13, 13],
@@ -113,10 +113,10 @@ const actions = {
           [13, 13],
         ];
       const payload = {
-        width: 420,
-        height: 420,
+        width: Platform.is.desktop ? 490 : window.innerHeight > window.innerWidth ? 350 : 420,
+        height: Platform.is.desktop ? 490 : window.innerHeight > window.innerWidth ? 350 : 420,
         totalCells: 14,
-        cellWidth: 30,
+        cellWidth: Platform.is.desktop ? 35 : window.innerHeight > window.innerWidth ? 25 : 30,
         startingPositions,
       };
       commit('setBoardSettings', payload);
@@ -136,10 +136,10 @@ const actions = {
           [19, 19],
         ];
       const payload = {
-        width: 500,
-        height: 500,
+        width: Platform.is.desktop ? 600 : window.innerHeight > window.innerWidth ? 360 : 500,
+        height: Platform.is.desktop ? 600 : window.innerHeight > window.innerWidth ? 360 : 500,
         totalCells: 20,
-        cellWidth: 25,
+        cellWidth: Platform.is.desktop ? 30 : window.innerHeight > window.innerWidth ? 18 : 25,
         startingPositions,
       };
       commit('setBoardSettings', payload);

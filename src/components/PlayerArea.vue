@@ -1,13 +1,13 @@
 <template>
   <div
-    class="rounded-borders shadow-1 q-my-sm q-mx-auto q-pa-md player-area"
+    class="rounded-borders shadow-1 q-pa-sm player-area"
     :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
   >
     <div class="row justify-between" style="height: 50px">
-      <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
-      <div class="q-mb-md row">
+      <h6 class="q-ma-sm">Player {{ playerId + 1 }}</h6>
+      <div class="q-mb-md row items-center">
         <q-icon name="timer" size="1.5rem"></q-icon>
-        <h6 class="q-ma-none">{{ formatTime }}</h6>
+        <h6 class="q-ma-sm">{{ formatTime }}</h6>
       </div>
     </div>
     <piece-selector
@@ -77,6 +77,10 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.player-area {
+  touch-action: manipulation;
+}
+
 @media screen and (max-width: 768px) {
   .player-area {
     width: 100% !important;
