@@ -4,7 +4,7 @@ import { Platform } from 'quasar'
 
 const state = {
   numberOfPlayers: 2,
-  timeForEachPlayer: '10 min', // ["5 min", "10 min", "20 min"]
+  timeForEachPlayer: 600, // 600 = 10mins
   startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
   boardSettings: {
     width: Platform.is.desktop ? 490 : 350,
@@ -17,11 +17,11 @@ const state = {
     ],
   },
   currentPlayerIndex: 0,
-  players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+  players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
-    players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+    players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
   },
 };
 
@@ -101,10 +101,17 @@ const mutations = {
     const currPlayer = state.replay.players[payload.currentPlayerId];
     currPlayer.remainingPieces[payload.usedPieceId].isUsed = payload.isUsed;
   },
+
+  updatePlayerOutOfGame(state, payload) {
+    console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
+    state.players[payload["currentPlayerId"]].outOfGame = true;
+    console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
+  },
 };
 
 const actions = {
-  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }) {
+  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }){
+    console.log(timeForEachPlayer);
     if (numberOfPlayers == 2) {
       let startingPositions = null;
       if (startPosition == 'Corner')
@@ -113,18 +120,18 @@ const actions = {
           [13, 13],
         ];
       const payload = {
-        width: 420,
-        height: 420,
+        width: Platform.is.desktop ? 490 : 350,
+        height: Platform.is.desktop ? 490 : 350,
         totalCells: 14,
-        cellWidth: 30,
+        cellWidth: Platform.is.desktop ? 35 : 25,
         startingPositions,
       };
       commit('setBoardSettings', payload);
-      commit('setPlayers', [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])]);
+      commit('setPlayers', [new Player(PLAYER_COLORS[0], timeForEachPlayer), new Player(PLAYER_COLORS[1], timeForEachPlayer)]);
       commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
-        players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+        players: [new Player(PLAYER_COLORS[0], null), new Player(PLAYER_COLORS[1], null)],
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
@@ -144,19 +151,19 @@ const actions = {
       };
       commit('setBoardSettings', payload);
       commit('setPlayers', [
-        new Player(PLAYER_COLORS[0]),
-        new Player(PLAYER_COLORS[1]),
-        new Player(PLAYER_COLORS[2]),
-        new Player(PLAYER_COLORS[3]),
+        new Player(PLAYER_COLORS[0], timeForEachPlayer),
+        new Player(PLAYER_COLORS[1], timeForEachPlayer),
+        new Player(PLAYER_COLORS[2], timeForEachPlayer),
+        new Player(PLAYER_COLORS[3], timeForEachPlayer),
       ]);
       commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
         players: [
-          new Player(PLAYER_COLORS[0]),
-          new Player(PLAYER_COLORS[1]),
-          new Player(PLAYER_COLORS[2]),
-          new Player(PLAYER_COLORS[3]),
+          new Player(PLAYER_COLORS[0], null),
+          new Player(PLAYER_COLORS[1], null),
+          new Player(PLAYER_COLORS[2], null),
+          new Player(PLAYER_COLORS[3], null),
         ],
       });
     }
@@ -195,6 +202,10 @@ const actions = {
 
   updateReplayCurrentPlayerRemainingPieces({ commit }, { currentPlayerId, usedPieceId, isUsed }) {
     commit('updateReplayCurrentPlayerRemainingPieces', { currentPlayerId, usedPieceId, isUsed });
+  },
+
+  updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
+    commit("updatePlayerOutOfGame", { currentPlayerId });
   },
 };
 

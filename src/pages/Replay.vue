@@ -1,7 +1,50 @@
 <template>
   <div class="row wrap room">
-    <div class="row items-center justify-around" style="height: calc(100vh - 50px); width: 100%">
-      <div class="col-12 col-sm-3 flex items-center">
+
+    <div class="q-pa-md q-mx-auto lt-md">
+      <div class="q-gutter-y-md" style="max-width: 400px">
+        <q-card flat>
+          <q-tabs
+            v-model="tab"
+            dense
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="player1" label="player1" />
+            <q-tab name="player2" label="player2" />
+            <q-tab name="player3" label="player3" v-if="numberOfPlayers > 2" />
+            <q-tab name="player4" label="player4" v-if="numberOfPlayers > 2" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="tab" animated>
+            <q-tab-panel name="player1">
+              <replay-player-area :playerId="0" />
+            </q-tab-panel>
+
+            <q-tab-panel name="player2">
+              <replay-player-area :playerId="1" />
+            </q-tab-panel>
+
+            <q-tab-panel name="player3">
+              <replay-player-area v-if="numberOfPlayers > 2" :playerId="2" />
+            </q-tab-panel>
+
+            <q-tab-panel name="player4">
+              <replay-player-area v-if="numberOfPlayers > 2" :playerId="3" />
+            </q-tab-panel>
+          </q-tab-panels>
+
+        </q-card>
+      </div>
+    </div>
+
+    <div class="row items-center justify-around board-area">
+      <div class="col-12 col-sm-3 flex items-center gt-sm">
         <replay-player-area :playerId="0" style="height: 50%" />
         <replay-player-area v-if="numberOfPlayers > 2" :playerId="2" style="height: 50%" />
       </div>
@@ -17,11 +60,11 @@
           <q-btn @click="handleReplay(true)" :disabled="replayIdx === replay.boardStates.length - 1"
             >next</q-btn
           >
-          <q-slider class="q-mt-md" v-model="replayIdx" readonly markers :min="0" :max="this.replay.boardStates.length - 1" color="blue-grey"/>
+          <q-slider class="q-my-md" v-model="replayIdx" readonly markers :min="0" :max="this.replay.boardStates.length - 1" color="blue-grey"/>
         </div>
       </div>
 
-      <div class="col-12 col-sm-3 flex justify-end">
+      <div class="col-12 col-sm-3 flex justify-end gt-sm">
         <replay-player-area :playerId="1" style="height: 50%" />
         <replay-player-area v-if="numberOfPlayers > 2" :playerId="3" style="height: 50%" />
       </div>
@@ -52,6 +95,7 @@ export default {
       replayIdx: 0,
       currentPlayerId: 0,
       context: null,
+      tab: 'player1',
     };
   },
 
@@ -132,3 +176,13 @@ export default {
   },
 };
 </script>
+<style>
+  .board-area{
+    width: 100%;
+  }
+  @media screen and (min-width:1023px) {
+    .board-area{
+      height: calc(100vh - 50px);
+    }
+  }
+  </style>
