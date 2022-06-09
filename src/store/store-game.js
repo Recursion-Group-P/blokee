@@ -1,11 +1,11 @@
-import { Player } from 'src/model/player';
-import { PLAYER_COLORS } from 'src/constants';
-import { Platform } from 'quasar'
+import { Player } from "src/model/player";
+import { PLAYER_COLORS } from "src/constants";
+import { Platform } from "quasar";
 
 const state = {
   numberOfPlayers: 2,
-  timeForEachPlayer: 600, // 600 = 10mins
-  startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
+  timeForEachPlayer: "10 min", // ["5 min", "10 min", "20 min"]
+  startPosition: "Corner", // ["Center", "Corner", "Anywhere"]
   boardSettings: {
     width: Platform.is.desktop ? 490 : 350,
     height: Platform.is.desktop ? 490 : 350,
@@ -46,7 +46,9 @@ const mutations = {
   },
 
   setCurrentPlayerSelectedPieceId(state, payload) {
-    state.players[payload.currentPlayerId].selectedPieceId = parseInt(payload.selectedPieceId);
+    state.players[payload.currentPlayerId].selectedPieceId = parseInt(
+      payload.selectedPieceId
+    );
   },
 
   updateCurrentPlayerRemainingPieces(state, payload) {
@@ -68,7 +70,7 @@ const mutations = {
     const currPlayer = state.players[payload.currentPlayerId];
     let pieceCoordinate = currPlayer.remainingPieces[payload.currentPiece].pieceCoords;
 
-    if (payload['rotateDirection'] === 'cw') {
+    if (payload["rotateDirection"] === "cw") {
       for (let j = 0; j < pieceCoordinate.length; j++) {
         pieceCoordinate[j].splice(0, 1, -pieceCoordinate[j][0]);
         let temp = pieceCoordinate[j][0];
@@ -76,7 +78,7 @@ const mutations = {
         pieceCoordinate[j].splice(1, 1, temp);
       }
     }
-    if (payload['rotateDirection'] === 'ccw') {
+    if (payload["rotateDirection"] === "ccw") {
       for (let j = 0; j < pieceCoordinate.length; j++) {
         pieceCoordinate[j].splice(1, 1, -pieceCoordinate[j][1]);
         let temp = pieceCoordinate[j][1];
@@ -102,6 +104,9 @@ const mutations = {
     currPlayer.remainingPieces[payload.usedPieceId].isUsed = payload.isUsed;
   },
 
+  updateCurrentPlayerId(state, payload) {
+    state.currentPlayerId = payload["nextPlayerId"];
+  },
   updatePlayerOutOfGame(state, payload) {
     console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
     state.players[payload["currentPlayerId"]].outOfGame = true;
@@ -114,7 +119,7 @@ const actions = {
     console.log(timeForEachPlayer);
     if (numberOfPlayers == 2) {
       let startingPositions = null;
-      if (startPosition == 'Corner')
+      if (startPosition == "Corner")
         startingPositions = [
           [0, 0],
           [13, 13],
@@ -135,7 +140,7 @@ const actions = {
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
-      if (startPosition == 'Corner')
+      if (startPosition == "Corner")
         startingPositions = [
           [0, 0],
           [0, 19],
@@ -156,7 +161,7 @@ const actions = {
         new Player(PLAYER_COLORS[2], timeForEachPlayer),
         new Player(PLAYER_COLORS[3], timeForEachPlayer),
       ]);
-      commit('setReplayState', {
+      commit("setReplayState", {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
         players: [
@@ -167,29 +172,29 @@ const actions = {
         ],
       });
     }
-    commit('setGameSettings', {
+    commit("setGameSettings", {
       numberOfPlayers: numberOfPlayers,
       timeForEachPlayer: timeForEachPlayer,
     });
   },
 
   setCurrentPlayerSelectedPieceId({ commit }, { currentPlayerId, selectedPieceId }) {
-    commit('setCurrentPlayerSelectedPieceId', { currentPlayerId, selectedPieceId });
+    commit("setCurrentPlayerSelectedPieceId", { currentPlayerId, selectedPieceId });
   },
 
   updateCurrentPlayerRemainingPieces({ commit }, { currentPlayerId }) {
-    commit('updateCurrentPlayerRemainingPieces', { currentPlayerId });
+    commit("updateCurrentPlayerRemainingPieces", { currentPlayerId });
   },
 
   updateCurrentPieceCoordinateAfterFlip({ commit }, { currentPlayerId, currentPiece }) {
-    commit('updateCurrentPieceCoordinateAfterFlip', { currentPlayerId, currentPiece });
+    commit("updateCurrentPieceCoordinateAfterFlip", { currentPlayerId, currentPiece });
   },
 
   updateCurrentPieceCoordinateAfterRotation(
     { commit },
     { currentPlayerId, rotateDirection, currentPiece }
   ) {
-    commit('updateCurrentPieceCoordinateAfterRotation', {
+    commit("updateCurrentPieceCoordinateAfterRotation", {
       currentPlayerId,
       rotateDirection,
       currentPiece,
@@ -197,11 +202,23 @@ const actions = {
   },
 
   addReplayState({ commit }, { boardState, usedPiece }) {
-    commit('addReplayState', { boardState, usedPiece });
+    commit("addReplayState", { boardState, usedPiece });
   },
 
-  updateReplayCurrentPlayerRemainingPieces({ commit }, { currentPlayerId, usedPieceId, isUsed }) {
-    commit('updateReplayCurrentPlayerRemainingPieces', { currentPlayerId, usedPieceId, isUsed });
+  updateReplayCurrentPlayerRemainingPieces(
+    { commit },
+    { currentPlayerId, usedPieceId, isUsed }
+  ) {
+    commit("updateReplayCurrentPlayerRemainingPieces", {
+      currentPlayerId,
+      usedPieceId,
+      isUsed,
+    });
+  },
+
+  updateCurrentPlayerId({ commit }, { currentPlayerId }) {
+    let nextPlayerId = (currentPlayerId + 1) % state.players.length;
+    commit("updateCurrentPlayerId", { nextPlayerId });
   },
 
   updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
@@ -233,6 +250,10 @@ const getters = {
   replay(state) {
     return state.replay;
   },
+
+  currentPlayerId(state) {
+    return state.currentPlayerId;
+  }
 };
 
 export default {
