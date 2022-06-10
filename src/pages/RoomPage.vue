@@ -174,7 +174,7 @@ export default Vue.extend({
     },
 
     currPlayerOutOfGame() {
-      return this.players[currentPlayerId].outOfGame;
+      return this.players[this.currentPlayerId].outOfGame;
     },
 
     gameBoard() {
@@ -243,9 +243,13 @@ export default Vue.extend({
 
     controlTimer(previousPlayerId) {
       // 古いcurrentPlayerIdのTimerを停止
+      console.log("stop");
       this.$refs["player-area-" + previousPlayerId].stopTimer();
       // 新しいcurrentPlayerIdのTimerを開始
-      this.$refs["player-area-" + this.currentPlayerId].startTimer();
+      if (this.players[this.currentPlayerId].outOfGame === false) {
+        console.log("start");
+        this.$refs["player-area-" + this.currentPlayerId].startTimer();
+      }
     },
 
     inBounds(row, col) {

@@ -116,6 +116,7 @@ export default Vue.extend({
       let self = this;
       this.timerObj = setInterval(function () {
         self.countDown();
+        console.log(self.time);
       }, 1000);
     },
     stopTimer() {
@@ -137,7 +138,6 @@ export default Vue.extend({
       handler(time) {
         if (time <= 0) {
           this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
-          // this.stopTimer();
           this.$emit("passPlayerTurn");
         }
       },

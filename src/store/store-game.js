@@ -224,9 +224,18 @@ const actions = {
 
   updateCurrentPlayerId({ commit }) {
     let nextPlayerId = (state.currentPlayerId + 1) % state.players.length;
+    let index = 0; // playerのoutOfGameを確認した回数をカウント
     while (state.players[nextPlayerId].outOfGame === true) {
+      // 確認した回数がplayer数を超えたら、nextPlayerIdに-1を代入してループ終了
+      index++;
+      if (index > state.players.length) {
+        nextPlayerId = -1;
+        break;
+      }
+
       nextPlayerId++;
-      if (nextPlayerId > state.players.length - 1) index = 0;
+      // playerの数を超えたら0に戻す
+      if (nextPlayerId > state.players.length - 1) nextPlayerId = 0;
     }
     commit("updateCurrentPlayerId", { nextPlayerId });
   },
