@@ -17,6 +17,7 @@ const state = {
     ],
   },
   currentPlayerId: 0,
+  currPiecePoint: 0,
   players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
@@ -108,12 +109,18 @@ const mutations = {
   updateCurrentPlayerId(state, payload) {
     state.currentPlayerId = payload["nextPlayerId"];
   },
+
   updatePlayerOutOfGame(state, payload) {
     console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
     state.players[payload["currentPlayerId"]].outOfGame = true;
     state.gameJudge++
     console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
   },
+
+  updateCurrentPlayerScore(state, payload) {
+    console.log(payload)
+    state.players[payload["currentPlayerId"]].score += payload["currPiecePoint"];
+  }
 };
 
 const actions = {
@@ -225,6 +232,10 @@ const actions = {
   updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
     commit("updatePlayerOutOfGame", { currentPlayerId });
   },
+
+  updateCurrentPlayerScore({ commit }, { currentPlayerId, currPiecePoint }) {
+    commit("updateCurrentPlayerScore", { currentPlayerId, currPiecePoint })
+  }
 };
 
 const getters = {

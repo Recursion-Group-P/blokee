@@ -148,6 +148,7 @@ export default {
             'boardSettings',
             'players',
             'currentPlayerId',
+            'currPiecePoint',
             'gameJudge',
         ]),
 
@@ -185,6 +186,7 @@ export default {
             'updateCurrentPlayerRemainingPieces',
             'addReplayState',
             'updateCurrentPlayerId',
+            'updateCurrentPlayerScore'
         ]),
 
         notifyInvalid() {
@@ -336,7 +338,6 @@ export default {
 
                 let currPiece =
                     this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
-                let currPiecePoint = currPiece.length + 1;
 
                 if (this.isValidMove(currPiece, row, col)) {
                     // place center piece
@@ -381,7 +382,10 @@ export default {
                             }
                         }
                     }
-                    this.updateScore(currPiecePoint);
+                    this.updateCurrentPlayerScore({
+                        currentPlayerId: this.currentPlayerId,
+                        currPiecePoint: currPiece.length + 1,
+                    });
                     this.changePlayerTurn();
                 } else {
                     this.notifyInvalid();
@@ -449,7 +453,6 @@ export default {
 
                 let currPiece =
                     this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
-                let currPiecePoint = currPiece.length + 1;
 
                 if (this.isValidMove(currPiece, row, col)) {
                     // place center piece
@@ -494,7 +497,10 @@ export default {
                             }
                         }
                     }
-                    this.updateScore(currPiecePoint);
+                    this.updateCurrentPlayerScore({
+                        currentPlayerId: this.currentPlayerId,
+                        currPiecePoint: currPiece.length + 1,
+                    });
                     this.changePlayerTurn();
                 } else {
                     this.notifyInvalid();
@@ -548,9 +554,6 @@ export default {
             }
         },
 
-        updateScore(currPiecePoint) {
-          console.log(currPiecePoint)
-        }
     },
 };
 </script>
