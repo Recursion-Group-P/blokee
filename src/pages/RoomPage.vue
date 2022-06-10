@@ -1,5 +1,9 @@
 <template>
     <div class="row wrap room">
+      <q-dialog v-model="gameOver">
+        <game-over-window />
+      </q-dialog>
+
         <!-- Responsive Tab  -->
         <div class="q-pa-md q-mx-auto lt-md">
             <div class="q-gutter-y-md" style="max-width: 400px">
@@ -59,7 +63,6 @@
 
             <!-- Board -->
             <div class="col-12 col-sm-4 text-center">
-                <game-over-window />
                 <div class="full-width row justify-center items-center">
                     <canvas
                         ref="canvasRef"
@@ -118,6 +121,7 @@ export default {
             context: null,
             canvas: null,
             tab: 'player1',
+            gameOver:false,
         };
     },
 
@@ -130,6 +134,11 @@ export default {
                 this.isDragging = true;
             }
         },
+        'gameJudge'() {
+            if(this.gameJudge === this.players.length) {
+                this.gameOver = true;
+            }
+        },
     },
 
     computed: {
@@ -139,6 +148,7 @@ export default {
             'boardSettings',
             'players',
             'currentPlayerId',
+            'gameJudge',
         ]),
 
         currPlayer() {
@@ -326,6 +336,7 @@ export default {
 
                 let currPiece =
                     this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+                let currPiecePoint = currPiece.length + 1;
 
                 if (this.isValidMove(currPiece, row, col)) {
                     // place center piece
@@ -370,6 +381,7 @@ export default {
                             }
                         }
                     }
+                    this.updateScore(currPiecePoint);
                     this.changePlayerTurn();
                 } else {
                     this.notifyInvalid();
@@ -437,6 +449,7 @@ export default {
 
                 let currPiece =
                     this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+                let currPiecePoint = currPiece.length + 1;
 
                 if (this.isValidMove(currPiece, row, col)) {
                     // place center piece
@@ -481,6 +494,7 @@ export default {
                             }
                         }
                     }
+                    this.updateScore(currPiecePoint);
                     this.changePlayerTurn();
                 } else {
                     this.notifyInvalid();
@@ -533,6 +547,10 @@ export default {
                 }
             }
         },
+
+        updateScore(currPiecePoint) {
+          console.log(currPiecePoint)
+        }
     },
 };
 </script>

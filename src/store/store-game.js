@@ -23,6 +23,7 @@ const state = {
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
     players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
   },
+  gameJudge: 0,
 };
 
 const mutations = {
@@ -110,6 +111,7 @@ const mutations = {
   updatePlayerOutOfGame(state, payload) {
     console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
     state.players[payload["currentPlayerId"]].outOfGame = true;
+    state.gameJudge++
     console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
   },
 };
@@ -253,6 +255,10 @@ const getters = {
   currentPlayerId(state) {
     return state.currentPlayerId;
   },
+
+  gameJudge(state) {
+    return state.gameJudge;
+  }
 };
 
 export default {
