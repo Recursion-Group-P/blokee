@@ -16,7 +16,7 @@ const state = {
       [13, 13],
     ],
   },
-  currentPlayerIndex: 0,
+  currentPlayerId: 0,
   players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
@@ -115,7 +115,7 @@ const mutations = {
 };
 
 const actions = {
-  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }){
+  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }) {
     console.log(timeForEachPlayer);
     if (numberOfPlayers == 2) {
       let startingPositions = null;
@@ -216,8 +216,7 @@ const actions = {
     });
   },
 
-  updateCurrentPlayerId({ commit }, { currentPlayerId }) {
-    let nextPlayerId = (currentPlayerId + 1) % state.players.length;
+  updateCurrentPlayerId({ commit }, { nextPlayerId }) {
     commit("updateCurrentPlayerId", { nextPlayerId });
   },
 

@@ -69,10 +69,10 @@
 </template>
 
 <script>
-import PlayerArea from 'src/components/PlayerArea.vue';
-import GameOverWindow from 'src/components/GameOverWindow.vue';
-import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
-import { mapGetters, mapActions } from 'vuex';
+import PlayerArea from "src/components/PlayerArea.vue";
+import GameOverWindow from "src/components/GameOverWindow.vue";
+import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from "src/constants";
+import { mapGetters, mapActions } from "vuex";
 
 //TODO: Placing pieces on a grid
 // 1. when piece is clicked -> selectedPieceId = selected piece idx (store in player object vuex?)
@@ -82,8 +82,8 @@ import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
-    'player-area': PlayerArea,
-    'game-over-window': GameOverWindow,
+    "player-area": PlayerArea,
+    "game-over-window": GameOverWindow,
   },
 
   computed: {
@@ -140,10 +140,10 @@ export default {
       this.canvas = canvas;
       this.drawBoard(context);
 
-      canvas.addEventListener('touchmove', (event) => this.handleTouchMove(event));
-      canvas.addEventListener('touchend', (event) => this.handleTouchEnd(event));
-      canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
-      canvas.addEventListener('click', (event) => this.handleMouseClick(event));
+      canvas.addEventListener("touchmove", (event) => this.handleTouchMove(event));
+      canvas.addEventListener("touchend", (event) => this.handleTouchEnd(event));
+      canvas.addEventListener("mousemove", (event) => this.handleMouseMove(event));
+      canvas.addEventListener("click", (event) => this.handleMouseClick(event));
     }
     // player-areaのタイマー開始
     this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
@@ -193,17 +193,20 @@ export default {
       });
 
       // タイマー停止
-      this.$refs["player-area-" + [this.currentPlayerId]].stopTimer();
+      // this.$refs["player-area-" + [this.currentPlayerId]].stopTimer();
+
+      // Calc next player's ID
+      let nextPlayerId = (this.currentPlayerId + 1) % this.players.length;
 
       // change player ID
       this.updateCurrentPlayerId({
-        currentPlayerId: this.currentPlayerId,
+        nextPlayerId: nextPlayerId,
       });
 
       this.drawBoard(this.context);
 
       // 次のプレイヤーのタイマー開始
-      this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
+      // this.$refs["player-area-" + [this.currentPlayerId]].startTimer();
     },
 
     inBounds(row, col) {
@@ -378,11 +381,11 @@ export default {
         this.drawBoard(this.context);
 
         if (this.inBounds(row, col)) {
-          this.context.strokeStyle = 'white';
+          this.context.strokeStyle = "white";
           this.context.lineWidth = 2;
 
-          let currPiece =
-            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+          let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+            .pieceCoords;
           this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
 
           // draw center piece
@@ -420,7 +423,8 @@ export default {
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
 
-        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+          .pieceCoords;
 
         if (this.isValidMove(currPiece, row, col)) {
           // place center piece
@@ -434,7 +438,9 @@ export default {
           }
 
           // reinitialize availablePlayerMoves for current player
-          this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
+          this.availablePlayerMoves[this.currentPlayerId] = new Array(
+            this.boardSettings.totalCells
+          )
             .fill(0)
             .map(() => new Array(this.boardSettings.totalCells).fill(0));
           // recompute availablePlayerMoves for current player
@@ -447,7 +453,10 @@ export default {
                   let diag_i = i + DIAG_DIR[0];
                   let diag_j = j + DIAG_DIR[1];
 
-                  if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
+                  if (
+                    this.inBounds(diag_i, diag_j) &&
+                    this.gameBoard[diag_i][diag_j] === 0
+                  ) {
                     canPlace = this.checkHorizontalDirs(diag_i, diag_j);
                   }
 
