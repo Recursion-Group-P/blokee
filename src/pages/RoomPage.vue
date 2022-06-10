@@ -108,6 +108,10 @@ export default {
 
   mounted() {
     const canvas = this.$refs.canvasRef;
+
+    //TODO: 一回目のマウント以降 canvas.offsetTop - 50 に値が変わる
+    console.log(canvas.offsetLeft, canvas.offsetTop)
+    
     const context = this.$refs.canvasRef.getContext('2d');
     if (context !== null) {
       this.context = context;
@@ -238,8 +242,6 @@ export default {
       if (this.isDragging) {
         let mouseX = event.pageX - this.canvas.offsetLeft;
         let mouseY = event.pageY - this.canvas.offsetTop;
-
-        console.log(mouseX, mouseY);
 
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);

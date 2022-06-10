@@ -31,9 +31,13 @@
       <!-- board -->
       <div class="col-12 col-sm-4 text-center">
         <div class="full-width row justify-center items-center">
-          <canvas ref="replayCanvasRef" :width="boardSettings.width" :height="boardSettings.height" />
+          <canvas
+            ref="replayCanvasRef"
+            :width="boardSettings.width"
+            :height="boardSettings.height"
+          />
         </div>
-        <div class="row justify-around q-mt-lg" style="touch-action: manipulation;">
+        <div class="row justify-around q-mt-lg" style="touch-action: manipulation">
           <q-btn
             @click="handleReplay(false)"
             :disabled="replayIdx === 0"
@@ -114,29 +118,33 @@ export default {
 
     handleReplay(increment) {
       if (increment) {
-        // update current player remaining pieces
-        this.updateReplayCurrentPlayerRemainingPieces({
-          currentPlayerId: this.currentPlayerId,
-          usedPieceId: this.replay.usedPieces[this.replayIdx],
-          isUsed: true,
-        });
+        if (this.replayIdx < this.replay.boardStates.length - 1) {
+          // update current player remaining pieces
+          this.updateReplayCurrentPlayerRemainingPieces({
+            currentPlayerId: this.currentPlayerId,
+            usedPieceId: this.replay.usedPieces[this.replayIdx],
+            isUsed: true,
+          });
 
-        this.currentPlayerId =
-          this.currentPlayerId + 1 >= this.numberOfPlayers ? 0 : this.currentPlayerId + 1;
-        this.tab = this.currentPlayerId.toString();
-        this.replayIdx++;
+          this.currentPlayerId =
+            this.currentPlayerId + 1 >= this.numberOfPlayers ? 0 : this.currentPlayerId + 1;
+          this.tab = this.currentPlayerId.toString();
+          this.replayIdx++;
+        }
       } else {
-        this.replayIdx--;
-        this.currentPlayerId =
-          this.currentPlayerId - 1 < 0 ? this.numberOfPlayers - 1 : this.currentPlayerId - 1;
-        this.tab = this.currentPlayerId.toString();
+        if (this.replayIdx > 0) {
+          this.replayIdx--;
+          this.currentPlayerId =
+            this.currentPlayerId - 1 < 0 ? this.numberOfPlayers - 1 : this.currentPlayerId - 1;
+          this.tab = this.currentPlayerId.toString();
 
-        // update current player remaining pieces
-        this.updateReplayCurrentPlayerRemainingPieces({
-          currentPlayerId: this.currentPlayerId,
-          usedPieceId: this.replay.usedPieces[this.replayIdx],
-          isUsed: false,
-        });
+          // update current player remaining pieces
+          this.updateReplayCurrentPlayerRemainingPieces({
+            currentPlayerId: this.currentPlayerId,
+            usedPieceId: this.replay.usedPieces[this.replayIdx],
+            isUsed: false,
+          });
+        }
       }
 
       this.drawBoard(this.context);
@@ -184,7 +192,6 @@ export default {
         return;
       }
       if (!this.interval) {
-        console.log('play replay');
         this.isPlaying = true;
         this.interval = setInterval(() => {
           this.handleReplay(true);
@@ -194,7 +201,6 @@ export default {
     },
 
     stopReplay() {
-      console.log('stop replay');
       this.isPlaying = false;
       clearInterval(this.interval);
       this.interval = null;

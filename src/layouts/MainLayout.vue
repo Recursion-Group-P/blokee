@@ -1,6 +1,9 @@
 <template>
   <q-layout style="background-color: #f2f4f7" view="hHh lpR fFf">
-    <q-header :class="[$q.screen.xs ? '' : 'header']" style="background-color: #f2f4f7; color: black">
+    <q-header
+      :class="[$q.screen.xs ? '' : 'header']"
+      style="background-color: #f2f4f7; color: black"
+    >
       <q-toolbar>
         <q-btn-dropdown flat dense round dropdown-icon="menu" no-icon-animation>
           <q-list class="q-py-md" style="width: 250px">
@@ -16,17 +19,21 @@
                 </q-item-label>
               </q-item-section>
             </q-item>
+            <q-item
+              v-if="$q.platform.is.electron"
+              @click="quitApp"
+              class="absolute-bottom"
+              clickable
+            >
+              <q-item-section avatar>
+                <q-icon name="power_settings_new" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Quit</q-item-label>
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-btn-dropdown>
-
-        <!-- <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="leftDrawerOpen = !leftDrawerOpen"
-        /> -->
 
         <q-toolbar-title> Blockee </q-toolbar-title>
 
@@ -39,43 +46,6 @@
         </q-item>
       </q-toolbar>
     </q-header>
-
-    <!-- <q-footer>
-      <q-tabs>
-        <q-route-tab
-          v-for="(nav, index) in filteredNavs"
-          :key="index"
-          :to="nav.to"
-          :icon="nav.icon"
-          :label="nav.label"
-        />
-      </q-tabs>
-    </q-footer> -->
-
-    <!-- <q-drawer
-      v-model="leftDrawerOpen"
-      :show-if-above="false"
-      :breakpoint="767"
-      :width="250"
-      bordered
-      content-class="bg-blue-2"
-    >
-      <q-list>
-        <q-item-label header class="text-grey-8"> Navigation </q-item-label>
-        <q-item v-for="(nav, index) in filteredNavs" :key="index" :to="nav.to" exact clickable>
-          <q-item-section avatar>
-            <q-icon :name="nav.icon" />
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label>{{ nav.label }}</q-item-label>
-            <q-item-label caption>
-              {{ nav.description }}
-            </q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-drawer> -->
 
     <q-page-container>
       <router-view />
@@ -133,6 +103,21 @@ export default {
 
   methods: {
     ...mapActions('auth', ['logout']),
+
+    quitApp() {
+      this.$q
+        .dialog({
+          title: 'Confirm',
+          message: 'Would you like to quit Blockee?',
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          if (this.$q.platform.is.electron) {
+            require('electron').ipcRenderer.send('quit-app');
+          }
+        });
+    },
   },
 };
 </script>
