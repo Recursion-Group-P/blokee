@@ -252,7 +252,7 @@ const getters = {
 
   currentPlayerId(state) {
     return state.currentPlayerId;
-  }
+  },
 };
 
 export default {
