@@ -4,7 +4,7 @@ import { Platform } from "quasar";
 
 const state = {
   numberOfPlayers: 2,
-  timeForEachPlayer: "10 min", // ["5 min", "10 min", "20 min"]
+  timeForEachPlayer: 600, // 600 = 10mins
   startPosition: "Corner", // ["Center", "Corner", "Anywhere"]
   boardSettings: {
     width: Platform.is.desktop ? 490 : 350,
@@ -17,12 +17,15 @@ const state = {
     ],
   },
   currentPlayerId: 0,
-  players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
+  currPiecePoint: 0,
+  players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
-    players: [new Player(PLAYER_COLORS[0], 600), new Player(PLAYER_COLORS[1], 600)],
+    players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
   },
+  winnerExist: false, // ゲーム終了時にtrueに変更
+  // gameJudge: 0,
 };
 
 const mutations = {
@@ -105,18 +108,27 @@ const mutations = {
   },
 
   updateCurrentPlayerId(state, payload) {
+    // state.winnerExist = new Evaluation(state.players, payload.gameOverCount).checkWinner();
+    // if (state.winnerExist) return;
     state.currentPlayerId = payload["nextPlayerId"];
   },
+
   updatePlayerOutOfGame(state, payload) {
     console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
     state.players[payload["currentPlayerId"]].outOfGame = true;
+    // state.gameJudge++
     console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
+  },
+
+  updateCurrentPlayerScore(state, payload) {
+    console.log(payload);
+    state.players[payload["currentPlayerId"]].score += payload["currPiecePoint"];
   },
 };
 
 const actions = {
   setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }) {
-    console.log(timeForEachPlayer);
+    // console.log(timeForEachPlayer);
     if (numberOfPlayers == 2) {
       let startingPositions = null;
       if (startPosition == "Corner")
@@ -131,12 +143,12 @@ const actions = {
         cellWidth: Platform.is.desktop ? 35 : 25,
         startingPositions,
       };
-      commit('setBoardSettings', payload);
-      commit('setPlayers', [new Player(PLAYER_COLORS[0], timeForEachPlayer), new Player(PLAYER_COLORS[1], timeForEachPlayer)]);
-      commit('setReplayState', {
+      commit("setBoardSettings", payload);
+      commit("setPlayers", [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])]);
+      commit("setReplayState", {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
-        players: [new Player(PLAYER_COLORS[0], null), new Player(PLAYER_COLORS[1], null)],
+        players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
@@ -148,27 +160,27 @@ const actions = {
           [19, 19],
         ];
       const payload = {
-        width: 500,
-        height: 500,
+        width: Platform.is.desktop ? 600 : 500,
+        height: Platform.is.desktop ? 600 : 500,
         totalCells: 20,
-        cellWidth: 25,
+        cellWidth: Platform.is.desktop ? 30 : 25,
         startingPositions,
       };
-      commit('setBoardSettings', payload);
-      commit('setPlayers', [
-        new Player(PLAYER_COLORS[0], timeForEachPlayer),
-        new Player(PLAYER_COLORS[1], timeForEachPlayer),
-        new Player(PLAYER_COLORS[2], timeForEachPlayer),
-        new Player(PLAYER_COLORS[3], timeForEachPlayer),
+      commit("setBoardSettings", payload);
+      commit("setPlayers", [
+        new Player(PLAYER_COLORS[0]),
+        new Player(PLAYER_COLORS[1]),
+        new Player(PLAYER_COLORS[2]),
+        new Player(PLAYER_COLORS[3]),
       ]);
       commit("setReplayState", {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
         players: [
-          new Player(PLAYER_COLORS[0], null),
-          new Player(PLAYER_COLORS[1], null),
-          new Player(PLAYER_COLORS[2], null),
-          new Player(PLAYER_COLORS[3], null),
+          new Player(PLAYER_COLORS[0]),
+          new Player(PLAYER_COLORS[1]),
+          new Player(PLAYER_COLORS[2]),
+          new Player(PLAYER_COLORS[3]),
         ],
       });
     }
@@ -216,12 +228,30 @@ const actions = {
     });
   },
 
-  updateCurrentPlayerId({ commit }, { nextPlayerId }) {
+  updateCurrentPlayerId({ commit }) {
+    let nextPlayerId = (state.currentPlayerId + 1) % state.players.length;
+    let gameOverPlayerCount = 0; // playerのoutOfGameを確認した回数をカウント
+    while (state.players[nextPlayerId].outOfGame) {
+      // 確認した回数とplayer数が同じなったらループ終了
+      gameOverPlayerCount++;
+      if (gameOverPlayerCount == state.players.length) {
+        break;
+      }
+
+      nextPlayerId++;
+      // playerの数を超えたら0に戻す
+      if (nextPlayerId > state.players.length - 1) nextPlayerId = 0;
+    }
+
     commit("updateCurrentPlayerId", { nextPlayerId });
   },
 
   updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
     commit("updatePlayerOutOfGame", { currentPlayerId });
+  },
+
+  updateCurrentPlayerScore({ commit }, { currentPlayerId, currPiecePoint }) {
+    commit("updateCurrentPlayerScore", { currentPlayerId, currPiecePoint });
   },
 };
 
@@ -252,6 +282,10 @@ const getters = {
 
   currentPlayerId(state) {
     return state.currentPlayerId;
+  },
+
+  winnerExist(state) {
+    return state.winnerExist;
   },
 };
 
