@@ -18,7 +18,7 @@ const state = {
   },
   currentPlayerId: 0,
   currPiecePoint: 0,
-  players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+  players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1], true)],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
@@ -169,9 +169,9 @@ const actions = {
       commit("setBoardSettings", payload);
       commit("setPlayers", [
         new Player(PLAYER_COLORS[0]),
-        new Player(PLAYER_COLORS[1]),
-        new Player(PLAYER_COLORS[2]),
-        new Player(PLAYER_COLORS[3]),
+        new Player(PLAYER_COLORS[1], true),
+        new Player(PLAYER_COLORS[2], true),
+        new Player(PLAYER_COLORS[3], true),
       ]);
       commit("setReplayState", {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
