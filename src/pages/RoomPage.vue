@@ -1,5 +1,8 @@
 <template>
   <div class="row wrap room">
+    <q-dialog v-model="winnerExist">
+      <game-over-window />
+    </q-dialog>
     <!-- Responsive Tab  -->
     <div class="q-pa-md q-mx-auto lt-md">
       <div class="q-gutter-y-md" style="max-width: 400px">
@@ -62,7 +65,6 @@
 
       <!-- Board -->
       <div class="col-12 col-sm-4 text-center">
-        <game-over-window />
         <div class="full-width row justify-center items-center">
           <canvas
             ref="canvasRef"
@@ -104,6 +106,7 @@ import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from "src/constants";
 import { mapGetters, mapActions } from "vuex";
 // Vue
 import Vue from "vue";
+import { Platform } from "quasar";
 
 export default Vue.extend({
   components: {
@@ -130,10 +133,12 @@ export default Vue.extend({
 
   data() {
     return {
+      showTip: true,
       isDragging: false,
       context: null,
       canvas: null,
       tab: "player1",
+      showModal: false,
     };
   },
 
@@ -143,6 +148,18 @@ export default Vue.extend({
         this.isDragging = false;
         this.drawBoard(this.context);
       } else {
+        if (this.showTip) {
+          const message = Platform.is.desktop
+            ? "ボード上でマウスカーソルを動かして選択したピースの配置を決め、クリックで確定します"
+            : "ボード上で指をドラッグして選択したピースの配置を決め、指を放して確定します";
+          this.$q.notify({
+            type: "info",
+            message,
+            timeout: 0,
+            closeBtn: true,
+          });
+          this.showTip = false;
+        }
         this.isDragging = true;
       }
     },
@@ -163,6 +180,8 @@ export default Vue.extend({
       "boardSettings",
       "players",
       "currentPlayerId",
+      "currPiecePoint",
+      "winnerExist",
     ]),
 
     currPlayer() {
@@ -203,6 +222,7 @@ export default Vue.extend({
       "updateCurrentPlayerRemainingPieces",
       "addReplayState",
       "updateCurrentPlayerId",
+      "updateCurrentPlayerScore",
     ]),
 
     notifyInvalid() {
@@ -401,6 +421,10 @@ export default Vue.extend({
               }
             }
           }
+          this.updateCurrentPlayerScore({
+            currentPlayerId: this.currentPlayerId,
+            currPiecePoint: currPiece.length + 1,
+          });
           this.changePlayerTurn();
         } else {
           this.notifyInvalid();
@@ -510,6 +534,10 @@ export default Vue.extend({
               }
             }
           }
+          this.updateCurrentPlayerScore({
+            currentPlayerId: this.currentPlayerId,
+            currPiecePoint: currPiece.length + 1,
+          });
           this.changePlayerTurn();
         } else {
           this.notifyInvalid();

@@ -13,7 +13,7 @@ export default {
         ...mapState(['auth']),
     },
     mounted() {
-        if (this.$q.platfrom.is.electron) {
+        if (this.$q.platform.is.electron) {
             require('electron').ipcRenderer.on('show-settings', () => {
                 this.$router.push('/settings');
             });

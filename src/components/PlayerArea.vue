@@ -116,7 +116,6 @@ export default Vue.extend({
       let self = this;
       this.timerObj = setInterval(function () {
         self.countDown();
-        console.log(self.time);
       }, 1000);
     },
     stopTimer() {
@@ -147,6 +146,10 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.player-area {
+  touch-action: manipulation;
+}
+
 @media screen and (max-width: 768px) {
   .player-area {
     width: 100% !important;

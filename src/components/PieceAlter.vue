@@ -1,23 +1,30 @@
 <template>
   <div>
     <div>
-      <div class="row justify-between q-mb-sm">
-        <q-btn outline color="blue-5" round icon="flip" @click="flipPiece" />
+      <div class="row justify-around q-mb-sm">
+        <q-btn filled color="blue-grey" round icon="flip" @click="flipPiece" />
         <q-btn
-          outline
-          color="blue-5"
+          filled
+          color="blue-grey"
           round
           icon="rotate_90_degrees_ccw"
           @click="turnPiece90DegreeCounterClockwise"
         />
         <q-btn
-          outline
-          color="blue-5"
+          filled
+          color="blue-grey"
           round
           icon="rotate_90_degrees_cw"
           @click="turnPiece90DegreeClockwise"
         />
-        <q-btn outline color="grey-7" round icon="close" @click="cancelPiece" />
+        <q-btn
+          filled
+          color="white"
+          text-color="blue-grey"
+          round
+          icon="close"
+          @click="cancelPiece"
+        />
       </div>
       <div
         class="bg-grey-2 rounded-borders q-pa-sm row justify-center selected-piece-focus"
@@ -30,16 +37,17 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
-import Vue from "vue";
+import { mapGetters, mapActions } from 'vuex';
+import Vue from 'vue';
 
 export default Vue.extend({
-  props: ["playerId"],
-  mounted() {
-    this.pieceCoordinate = this.players[this.playerId].remainingPieces[
-      this.currPlayerSelectedPieceId
-    ].pieceCoords;
-    this.drawPiece(this.pieceCoordinate);
+  props: ['playerId'],
+  computed: {
+    ...mapGetters('game', ['players']),
+
+    currPlayerSelectedPieceId() {
+      return this.players[this.playerId].selectedPieceId;
+    },
   },
   data() {
     return {
@@ -48,18 +56,11 @@ export default Vue.extend({
       pieceCoordinate: null,
     };
   },
-  computed: {
-    ...mapGetters("game", ["players"]),
-
-    currPlayerSelectedPieceId() {
-      return this.players[this.playerId].selectedPieceId;
-    },
-  },
   methods: {
-    ...mapActions("game", [
-      "setCurrentPlayerSelectedPieceId",
-      "updateCurrentPieceCoordinateAfterFlip",
-      "updateCurrentPieceCoordinateAfterRotation",
+    ...mapActions('game', [
+      'setCurrentPlayerSelectedPieceId',
+      'updateCurrentPieceCoordinateAfterFlip',
+      'updateCurrentPieceCoordinateAfterRotation',
     ]),
 
     cancelPiece() {
@@ -72,9 +73,9 @@ export default Vue.extend({
     // Draw the selected piece
     drawPiece(pieceCoordinate) {
       let canvas = this.$refs.canvas;
-      let ctx = canvas.getContext("2d");
+      let ctx = canvas.getContext('2d');
       ctx.fillStyle = this.players[this.playerId].color;
-      ctx.strokeStyle = "white";
+      ctx.strokeStyle = 'white';
       ctx.lineWidth = 2.5;
 
       // Clear drawing
@@ -82,14 +83,14 @@ export default Vue.extend({
 
       // Draw center piece
       ctx.fillRect(
-        this.startDrawCoordinate["x"],
-        this.startDrawCoordinate["y"],
+        this.startDrawCoordinate['x'],
+        this.startDrawCoordinate['y'],
         this.cellSize,
         this.cellSize
       );
       ctx.strokeRect(
-        this.startDrawCoordinate["x"],
-        this.startDrawCoordinate["y"],
+        this.startDrawCoordinate['x'],
+        this.startDrawCoordinate['y'],
         this.cellSize,
         this.cellSize
       );
@@ -97,14 +98,14 @@ export default Vue.extend({
       // Draw other piece
       for (let i = 0; i < pieceCoordinate.length; i++) {
         ctx.fillRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate["x"],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate["y"],
+          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
+          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
         ctx.strokeRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate["x"],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate["y"],
+          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
+          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
@@ -122,7 +123,7 @@ export default Vue.extend({
       this.drawPiece(this.pieceCoordinate);
     },
     turnPiece90DegreeClockwise() {
-      let rotateDirection = "cw"; // cw stands for "clock wise"
+      let rotateDirection = 'cw'; // cw stands for "clock wise"
       // 座標の更新
       this.updateCurrentPieceCoordinateAfterRotation({
         currentPlayerId: this.playerId,
@@ -133,7 +134,7 @@ export default Vue.extend({
       this.drawPiece(this.pieceCoordinate);
     },
     turnPiece90DegreeCounterClockwise() {
-      let rotateDirection = "ccw"; // ccw stands for "counter clock wise"
+      let rotateDirection = 'ccw'; // ccw stands for "counter clock wise"
       // 座標の更新
       this.updateCurrentPieceCoordinateAfterRotation({
         currentPlayerId: this.playerId,
@@ -143,6 +144,11 @@ export default Vue.extend({
       // 更新した座標でピースを描画
       this.drawPiece(this.pieceCoordinate);
     },
+  },
+  mounted() {
+    this.pieceCoordinate =
+      this.players[this.playerId].remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+    this.drawPiece(this.pieceCoordinate);
   },
 });
 </script>
