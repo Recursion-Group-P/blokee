@@ -1,5 +1,6 @@
 import { app, BrowserWindow, nativeTheme, Menu, ipcMain } from 'electron'
 import { template } from './electron-main-menu'
+const path = require('path');
 
 try {
   if (process.platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
@@ -39,12 +40,13 @@ app.on('ready', () => {
     webPreferences: {
       // Change from /quasar.conf.js > electron > nodeIntegration;
       // More info: https://quasar.dev/quasar-cli/developing-electron-apps/node-integration
+      worldSafeExecuteJavaScript: true,
       nodeIntegration: process.env.QUASAR_NODE_INTEGRATION,
       nodeIntegrationInWorker: process.env.QUASAR_NODE_INTEGRATION,
-      nativeWindowOpen: true
+      nativeWindowOpen: true,
 
       // More info: /quasar-cli/developing-electron-apps/electron-preload-script
-      // preload: path.resolve(__dirname, 'electron-preload.js')
+      preload: path.resolve(__dirname, 'electron-preload.js')
     }
   })
 

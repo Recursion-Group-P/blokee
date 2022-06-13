@@ -13,7 +13,8 @@ const ESLintPlugin = require('eslint-webpack-plugin')
 
 
 module.exports = function (/* ctx */) {
-  require('dotenv').config()
+  // for firebase
+  // require('dotenv').config()
   return {
     // https://v1.quasar.dev/quasar-cli/supporting-ts
     supportTS: false,
@@ -25,7 +26,7 @@ module.exports = function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v1.quasar.dev/quasar-cli/boot-files
     boot: [
-      'firebase.js',
+      // 'firebase.js',
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -49,16 +50,18 @@ module.exports = function (/* ctx */) {
 
     // Full list of options: https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
-      env: {
-        FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
-        FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
-        FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
-        FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
-        FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
-        FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
-        FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID
-      },
+      // for firebase
+      // env: {
+      //   FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
+      //   FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
+      //   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+      //   FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
+      //   FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
+      //   FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
+      //   FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID
+      // },
       vueRouterMode: 'hash', // available values: 'hash', 'history'
+      devtool: 'source-map',
 
       // transpile: false,
 
@@ -201,7 +204,7 @@ module.exports = function (/* ctx */) {
       },
 
       // More info: https://v1.quasar.dev/quasar-cli/developing-electron-apps/node-integration
-      nodeIntegration: true,
+      nodeIntegration: false,
 
       extendWebpack (/* cfg */) {
         // do something with Electron main process Webpack cfg
