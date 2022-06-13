@@ -61,6 +61,7 @@ module.exports = function (/* ctx */) {
       //   FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID
       // },
       vueRouterMode: 'hash', // available values: 'hash', 'history'
+      devtool: 'source-map',
 
       // transpile: false,
 
@@ -203,7 +204,7 @@ module.exports = function (/* ctx */) {
       },
 
       // More info: https://v1.quasar.dev/quasar-cli/developing-electron-apps/node-integration
-      nodeIntegration: true,
+      nodeIntegration: false,
 
       extendWebpack (/* cfg */) {
         // do something with Electron main process Webpack cfg
