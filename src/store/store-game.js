@@ -1,16 +1,19 @@
-import { Player } from "src/model/player";
-import { PLAYER_COLORS } from "src/constants";
-import { Platform } from "quasar";
+import { Player, AIPlayer } from 'src/model/player';
+import { PLAYER_COLORS } from 'src/constants';
+import { Platform } from 'quasar';
 
 const state = {
   numberOfPlayers: 2,
   timeForEachPlayer: 600, // 600 = 10mins
-  startPosition: "Corner", // ["Center", "Corner", "Anywhere"]
+  startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
   boardSettings: {
-    width: Platform.is.desktop ? 490 : 350,
-    height: Platform.is.desktop ? 490 : 350,
+    // window.innerWidth > 1180 -> laptop
+    // window.innerWidth < 768 -> mobile
+    // else -> tablet
+    width: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
+    height: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
     totalCells: 14,
-    cellWidth: Platform.is.desktop ? 35 : 25,
+    cellWidth: window.innerWidth > 1180 ? 35 : window.innerWidth < 768 ? 26 : 30,
     startingPositions: [
       [0, 0],
       [13, 13],
@@ -18,11 +21,11 @@ const state = {
   },
   currentPlayerId: 0,
   currPiecePoint: 0,
-  players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1], true)],
+  players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1')],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
-    players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+    players: [new Player(PLAYER_COLORS[0], 'YOU'), new Player(PLAYER_COLORS[1], 'CPU 1')],
   },
   winnerExist: false, // ゲーム終了時にtrueに変更
   // gameJudge: 0,
@@ -49,9 +52,7 @@ const mutations = {
   },
 
   setCurrentPlayerSelectedPieceId(state, payload) {
-    state.players[payload.currentPlayerId].selectedPieceId = parseInt(
-      payload.selectedPieceId
-    );
+    state.players[payload.currentPlayerId].selectedPieceId = parseInt(payload.selectedPieceId);
   },
 
   updateCurrentPlayerRemainingPieces(state, payload) {
@@ -73,7 +74,7 @@ const mutations = {
     const currPlayer = state.players[payload.currentPlayerId];
     let pieceCoordinate = currPlayer.remainingPieces[payload.currentPiece].pieceCoords;
 
-    if (payload["rotateDirection"] === "cw") {
+    if (payload['rotateDirection'] === 'cw') {
       for (let j = 0; j < pieceCoordinate.length; j++) {
         pieceCoordinate[j].splice(0, 1, -pieceCoordinate[j][0]);
         let temp = pieceCoordinate[j][0];
@@ -81,7 +82,7 @@ const mutations = {
         pieceCoordinate[j].splice(1, 1, temp);
       }
     }
-    if (payload["rotateDirection"] === "ccw") {
+    if (payload['rotateDirection'] === 'ccw') {
       for (let j = 0; j < pieceCoordinate.length; j++) {
         pieceCoordinate[j].splice(1, 1, -pieceCoordinate[j][1]);
         let temp = pieceCoordinate[j][1];
@@ -110,19 +111,19 @@ const mutations = {
   updateCurrentPlayerId(state, payload) {
     // state.winnerExist = new Evaluation(state.players, payload.gameOverCount).checkWinner();
     // if (state.winnerExist) return;
-    state.currentPlayerId = payload["nextPlayerId"];
+    state.currentPlayerId = payload['nextPlayerId'];
   },
 
   updatePlayerOutOfGame(state, payload) {
-    console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
-    state.players[payload["currentPlayerId"]].outOfGame = true;
+    console.log('before: ' + state.players[payload['currentPlayerId']].outOfGame);
+    state.players[payload['currentPlayerId']].outOfGame = true;
     // state.gameJudge++
-    console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
+    console.log('after: ' + state.players[payload['currentPlayerId']].outOfGame);
   },
 
   updateCurrentPlayerScore(state, payload) {
     console.log(payload);
-    state.players[payload["currentPlayerId"]].score += payload["currPiecePoint"];
+    state.players[payload['currentPlayerId']].score += payload['currPiecePoint'];
   },
 };
 
@@ -131,28 +132,31 @@ const actions = {
     // console.log(timeForEachPlayer);
     if (numberOfPlayers == 2) {
       let startingPositions = null;
-      if (startPosition == "Corner")
+      if (startPosition == 'Corner')
         startingPositions = [
           [0, 0],
           [13, 13],
         ];
       const payload = {
-        width: Platform.is.desktop ? 490 : 350,
-        height: Platform.is.desktop ? 490 : 350,
+        width: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
+        height: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
         totalCells: 14,
-        cellWidth: Platform.is.desktop ? 35 : 25,
+        cellWidth: window.innerWidth > 1180 ? 35 : window.innerWidth < 768 ? 26 : 30,
         startingPositions,
       };
-      commit("setBoardSettings", payload);
-      commit("setPlayers", [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])]);
-      commit("setReplayState", {
+      commit('setBoardSettings', payload);
+      commit('setPlayers', [
+        new Player(PLAYER_COLORS[0], 'YOU'),
+        new AIPlayer(PLAYER_COLORS[1], 'CPU 1'),
+      ]);
+      commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
-        players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+        players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1')],
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
-      if (startPosition == "Corner")
+      if (startPosition == 'Corner')
         startingPositions = [
           [0, 0],
           [0, 19],
@@ -160,53 +164,53 @@ const actions = {
           [19, 19],
         ];
       const payload = {
-        width: Platform.is.desktop ? 600 : 500,
-        height: Platform.is.desktop ? 600 : 500,
+        width: window.innerWidth > 1180 ? 600 : window.innerWidth < 768 ? 380 : 500,
+        height: window.innerWidth > 1180 ? 600 : window.innerWidth < 768 ? 380 : 500,
         totalCells: 20,
-        cellWidth: Platform.is.desktop ? 30 : 25,
+        cellWidth: window.innerWidth > 1180 ? 30 : window.innerWidth < 768 ? 19 : 25,
         startingPositions,
       };
-      commit("setBoardSettings", payload);
-      commit("setPlayers", [
-        new Player(PLAYER_COLORS[0]),
-        new Player(PLAYER_COLORS[1], true),
-        new Player(PLAYER_COLORS[2], true),
-        new Player(PLAYER_COLORS[3], true),
+      commit('setBoardSettings', payload);
+      commit('setPlayers', [
+        new Player(PLAYER_COLORS[0], 'YOU'),
+        new AIPlayer(PLAYER_COLORS[1], 'CPU 1'),
+        new AIPlayer(PLAYER_COLORS[2], 'CPU 2'),
+        new AIPlayer(PLAYER_COLORS[3], 'CPU 3'),
       ]);
-      commit("setReplayState", {
+      commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
         players: [
-          new Player(PLAYER_COLORS[0]),
-          new Player(PLAYER_COLORS[1]),
-          new Player(PLAYER_COLORS[2]),
-          new Player(PLAYER_COLORS[3]),
+          new Player(PLAYER_COLORS[0], 'YOU'),
+          new AIPlayer(PLAYER_COLORS[1], 'CPU 1'),
+          new AIPlayer(PLAYER_COLORS[2], 'CPU 2'),
+          new AIPlayer(PLAYER_COLORS[3], 'CPU 3'),
         ],
       });
     }
-    commit("setGameSettings", {
+    commit('setGameSettings', {
       numberOfPlayers: numberOfPlayers,
       timeForEachPlayer: timeForEachPlayer,
     });
   },
 
   setCurrentPlayerSelectedPieceId({ commit }, { currentPlayerId, selectedPieceId }) {
-    commit("setCurrentPlayerSelectedPieceId", { currentPlayerId, selectedPieceId });
+    commit('setCurrentPlayerSelectedPieceId', { currentPlayerId, selectedPieceId });
   },
 
   updateCurrentPlayerRemainingPieces({ commit }, { currentPlayerId }) {
-    commit("updateCurrentPlayerRemainingPieces", { currentPlayerId });
+    commit('updateCurrentPlayerRemainingPieces', { currentPlayerId });
   },
 
   updateCurrentPieceCoordinateAfterFlip({ commit }, { currentPlayerId, currentPiece }) {
-    commit("updateCurrentPieceCoordinateAfterFlip", { currentPlayerId, currentPiece });
+    commit('updateCurrentPieceCoordinateAfterFlip', { currentPlayerId, currentPiece });
   },
 
   updateCurrentPieceCoordinateAfterRotation(
     { commit },
     { currentPlayerId, rotateDirection, currentPiece }
   ) {
-    commit("updateCurrentPieceCoordinateAfterRotation", {
+    commit('updateCurrentPieceCoordinateAfterRotation', {
       currentPlayerId,
       rotateDirection,
       currentPiece,
@@ -214,14 +218,11 @@ const actions = {
   },
 
   addReplayState({ commit }, { boardState, usedPiece }) {
-    commit("addReplayState", { boardState, usedPiece });
+    commit('addReplayState', { boardState, usedPiece });
   },
 
-  updateReplayCurrentPlayerRemainingPieces(
-    { commit },
-    { currentPlayerId, usedPieceId, isUsed }
-  ) {
-    commit("updateReplayCurrentPlayerRemainingPieces", {
+  updateReplayCurrentPlayerRemainingPieces({ commit }, { currentPlayerId, usedPieceId, isUsed }) {
+    commit('updateReplayCurrentPlayerRemainingPieces', {
       currentPlayerId,
       usedPieceId,
       isUsed,
@@ -243,15 +244,15 @@ const actions = {
       if (nextPlayerId > state.players.length - 1) nextPlayerId = 0;
     }
 
-    commit("updateCurrentPlayerId", { nextPlayerId });
+    commit('updateCurrentPlayerId', { nextPlayerId });
   },
 
   updatePlayerOutOfGame({ commit }, { currentPlayerId }) {
-    commit("updatePlayerOutOfGame", { currentPlayerId });
+    commit('updatePlayerOutOfGame', { currentPlayerId });
   },
 
   updateCurrentPlayerScore({ commit }, { currentPlayerId, currPiecePoint }) {
-    commit("updateCurrentPlayerScore", { currentPlayerId, currPiecePoint });
+    commit('updateCurrentPlayerScore', { currentPlayerId, currPiecePoint });
   },
 };
 

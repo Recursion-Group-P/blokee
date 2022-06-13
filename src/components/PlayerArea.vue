@@ -10,7 +10,7 @@
     }`"
   >
     <div class="row justify-between" style="height: 50px">
-      <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
+      <h6 class="q-ma-none"><strong>{{ this.players[this.playerId].name }}</strong></h6>
       <h6 class="q-ma-none player-score">
         {{ "Score: " + this.players[this.playerId].score }}
       </h6>

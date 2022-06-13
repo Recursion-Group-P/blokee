@@ -6,7 +6,7 @@
         }`"
     >
         <div class="row justify-start" style="height: 50px">
-            <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
+            <h6 class="q-ma-none">{{ replay.players[playerId].name }}</h6>
         </div>
         <div class="rounded-borders q-pa-sm" style="background-color: #f2f4f7">
             <canvas

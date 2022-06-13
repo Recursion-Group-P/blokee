@@ -49,9 +49,14 @@
       <!-- Board -->
       <div class="col-12 col-sm-4 text-center">
         <div class="full-width row justify-center items-center">
-          <canvas ref="canvasRef" :width="boardSettings.width" :height="boardSettings.height" />
+          <canvas
+            ref="canvasRef"
+            class="mobile-canvas"
+            :width="boardSettings.width"
+            :height="boardSettings.height"
+          />
         </div>
-        <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
+        <!-- <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn> -->
       </div>
 
       <!-- Player 2 & 4 -->
@@ -113,6 +118,8 @@ export default Vue.extend({
 
   data() {
     return {
+      notifyPosition: Platform.is.desktop ? 'bottom' : 'top',
+      pieceSound: new Audio(require('../assets/sounds/piece.mp3')),
       showTip: true,
       isDragging: false,
       context: null,
@@ -137,6 +144,7 @@ export default Vue.extend({
             message,
             timeout: 0,
             closeBtn: true,
+            position: this.notifyPosition,
           });
           this.showTip = false;
         }
@@ -163,6 +171,10 @@ export default Vue.extend({
       'currPiecePoint',
       'winnerExist',
     ]),
+
+    innerWidth() {
+      return window.innerWidth;
+    },
 
     currPlayer() {
       return this.players[this.currentPlayerId];
@@ -203,6 +215,7 @@ export default Vue.extend({
       'addReplayState',
       'updateCurrentPlayerId',
       'updateCurrentPlayerScore',
+      'updateCurrentPieceCoordinateAfterRotation',
     ]),
 
     notifyInvalid() {
@@ -210,6 +223,7 @@ export default Vue.extend({
         type: 'warning',
         message: '現在のマス目にブロックを置けません！',
         timeout: 1000,
+        position: this.notifyPosition,
       });
     },
 
@@ -241,10 +255,20 @@ export default Vue.extend({
 
       this.drawBoard(this.context);
 
+      // if next player is AI
       if (this.players[this.currentPlayerId].isAI) {
         setTimeout(() => {
-          this.playAITurn();
-        }, Math.floor(Math.random() * (4000 - 1000)) + 1000);
+          // play AI turn and change player
+          if (this.playAITurn()) {
+            this.changePlayerTurn();
+          } else {
+            this.$q.notify({
+              type: 'warning',
+              message: 'CPU CANNOT PLACE ANYMORE PIECES!',
+              position: this.notifyPosition,
+            });
+          }
+        }, Math.floor(Math.random() * (3000 - 1000)) + 1000);
       }
     },
 
@@ -257,6 +281,15 @@ export default Vue.extend({
         console.log('start');
         this.$refs['player-area-' + this.currentPlayerId].startTimer();
       }
+    },
+
+    getRowColMouse(event) {
+      let mouseX = event.pageX - this.canvas.offsetLeft;
+      let mouseY = event.pageY - this.canvas.offsetTop - 50;
+      let cellWidth = this.boardSettings.cellWidth;
+      let row = Math.floor(mouseY / cellWidth);
+      let col = Math.floor(mouseX / cellWidth);
+      return [row, col];
     },
 
     inBounds(row, col) {
@@ -311,96 +344,96 @@ export default Vue.extend({
       return isValid && hasCorner;
     },
 
+    // ボードにピースを置く
+    placePieceOnBoard(row, col, currPiece) {
+      this.pieceSound.play();
+
+      this.gameBoard[row][col] = this.currentPlayerId + 1;
+
+      // place other pieces
+      for (let i = 0; i < currPiece.length; i++) {
+        let curr_row = row + currPiece[i][0];
+        let curr_col = col + currPiece[i][1];
+        this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
+      }
+
+      // reinitialize availablePlayerMoves for current player
+      this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
+        .fill(0)
+        .map(() => new Array(this.boardSettings.totalCells).fill(0));
+      // recompute availablePlayerMoves for current player
+      for (let i = 0; i < this.boardSettings.totalCells; i++) {
+        for (let j = 0; j < this.boardSettings.totalCells; j++) {
+          if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
+            // check all corners for each piece
+            for (const DIAG_DIR of DIAG_DIRS) {
+              let canPlace = false;
+              let diag_i = i + DIAG_DIR[0];
+              let diag_j = j + DIAG_DIR[1];
+
+              if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
+                canPlace = this.checkHorizontalDirs(diag_i, diag_j);
+              }
+
+              if (canPlace) {
+                this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
+              }
+            }
+          }
+        }
+      }
+    },
+
+    // ボードにピースを描画する
+    drawPieceOnBoard(row, col, currPiece) {
+      const cellWidth = this.boardSettings.cellWidth;
+
+      this.context.strokeStyle = 'white';
+      this.context.lineWidth = 2;
+
+      this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
+
+      // draw center piece
+      this.context.fillRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
+      this.context.strokeRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
+
+      // draw other pieces
+      for (let i = 0; i < currPiece.length; i++) {
+        // currPiece = [x, y] where x is relative row, y is relative col
+        this.context.fillRect(
+          col * cellWidth + currPiece[i][1] * cellWidth,
+          row * cellWidth + currPiece[i][0] * cellWidth,
+          cellWidth,
+          cellWidth
+        );
+        this.context.strokeRect(
+          col * cellWidth + currPiece[i][1] * cellWidth,
+          row * cellWidth + currPiece[i][0] * cellWidth,
+          cellWidth,
+          cellWidth
+        );
+      }
+    },
+
     handleMouseMove(event) {
       if (this.isDragging) {
-        let mouseX = event.pageX - this.canvas.offsetLeft;
-        let mouseY = event.pageY - this.canvas.offsetTop - 50;
-
-        let cellWidth = this.boardSettings.cellWidth;
-        let row = Math.floor(mouseY / cellWidth);
-        let col = Math.floor(mouseX / cellWidth);
-
+        let [row, col] = this.getRowColMouse(event);
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
         this.drawBoard(this.context);
 
         if (this.inBounds(row, col)) {
-          this.context.strokeStyle = 'white';
-          this.context.lineWidth = 2;
-
-          let currPiece =
-            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
-          this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
-
-          // draw center piece
-          this.context.fillRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
-          this.context.strokeRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
-
-          // draw other pieces
-          for (let i = 0; i < currPiece.length; i++) {
-            // currPiece = [x, y] where x is relative row, y is relative col
-            this.context.fillRect(
-              col * cellWidth + currPiece[i][1] * cellWidth,
-              row * cellWidth + currPiece[i][0] * cellWidth,
-              cellWidth,
-              cellWidth
-            );
-            this.context.strokeRect(
-              col * cellWidth + currPiece[i][1] * cellWidth,
-              row * cellWidth + currPiece[i][0] * cellWidth,
-              cellWidth,
-              cellWidth
-            );
-          }
+          this.drawPieceOnBoard(row, col, currPiece);
         }
       }
     },
 
     handleMouseClick(event) {
       if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
-        let mouseX = event.pageX - this.canvas.offsetLeft;
-        let mouseY = event.pageY - this.canvas.offsetTop - 50;
-
-        let cellWidth = this.boardSettings.cellWidth;
-        let row = Math.floor(mouseY / cellWidth);
-        let col = Math.floor(mouseX / cellWidth);
-
+        let [row, col] = this.getRowColMouse(event);
         let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
 
         if (this.isValidMove(currPiece, row, col)) {
-          // place center piece
-          this.gameBoard[row][col] = this.currentPlayerId + 1;
-
-          // place other pieces
-          for (let i = 0; i < currPiece.length; i++) {
-            let curr_row = row + currPiece[i][0];
-            let curr_col = col + currPiece[i][1];
-            this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
-          }
-
-          // reinitialize availablePlayerMoves for current player
-          this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
-            .fill(0)
-            .map(() => new Array(this.boardSettings.totalCells).fill(0));
-          // recompute availablePlayerMoves for current player
-          for (let i = 0; i < this.boardSettings.totalCells; i++) {
-            for (let j = 0; j < this.boardSettings.totalCells; j++) {
-              if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
-                // check all corners for each piece
-                for (const DIAG_DIR of DIAG_DIRS) {
-                  let canPlace = false;
-                  let diag_i = i + DIAG_DIR[0];
-                  let diag_j = j + DIAG_DIR[1];
-
-                  if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
-                    canPlace = this.checkHorizontalDirs(diag_i, diag_j);
-                  }
-
-                  if (canPlace) {
-                    this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
-                  }
-                }
-              }
-            }
-          }
+          this.placePieceOnBoard(row, col, currPiece);
           this.updateCurrentPlayerScore({
             currentPlayerId: this.currentPlayerId,
             currPiecePoint: currPiece.length + 1,
@@ -420,41 +453,15 @@ export default Vue.extend({
       if (this.isDragging) {
         let mouseX = event.targetTouches[0].pageX - this.canvas.offsetLeft;
         let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop - 50;
-
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
 
         this.drawBoard(this.context);
 
         if (this.inBounds(row, col)) {
-          this.context.strokeStyle = 'white';
-          this.context.lineWidth = 2;
-
-          let currPiece =
-            this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
-          this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
-
-          // draw center piece
-          this.context.fillRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
-          this.context.strokeRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
-
-          // draw other pieces
-          for (let i = 0; i < currPiece.length; i++) {
-            // currPiece = [x, y] where x is relative row, y is relative col
-            this.context.fillRect(
-              col * cellWidth + currPiece[i][1] * cellWidth,
-              row * cellWidth + currPiece[i][0] * cellWidth,
-              cellWidth,
-              cellWidth
-            );
-            this.context.strokeRect(
-              col * cellWidth + currPiece[i][1] * cellWidth,
-              row * cellWidth + currPiece[i][0] * cellWidth,
-              cellWidth,
-              cellWidth
-            );
-          }
+          this.drawPieceOnBoard(row, col, currPiece);
         }
       }
     },
@@ -474,40 +481,7 @@ export default Vue.extend({
 
         if (this.isValidMove(currPiece, row, col)) {
           // place center piece
-          this.gameBoard[row][col] = this.currentPlayerId + 1;
-
-          // place other pieces
-          for (let i = 0; i < currPiece.length; i++) {
-            let curr_row = row + currPiece[i][0];
-            let curr_col = col + currPiece[i][1];
-            this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
-          }
-
-          // reinitialize availablePlayerMoves for current player
-          this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
-            .fill(0)
-            .map(() => new Array(this.boardSettings.totalCells).fill(0));
-          // recompute availablePlayerMoves for current player
-          for (let i = 0; i < this.boardSettings.totalCells; i++) {
-            for (let j = 0; j < this.boardSettings.totalCells; j++) {
-              if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
-                // check all corners for each piece
-                for (const DIAG_DIR of DIAG_DIRS) {
-                  let canPlace = false;
-                  let diag_i = i + DIAG_DIR[0];
-                  let diag_j = j + DIAG_DIR[1];
-
-                  if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
-                    canPlace = this.checkHorizontalDirs(diag_i, diag_j);
-                  }
-
-                  if (canPlace) {
-                    this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
-                  }
-                }
-              }
-            }
-          }
+          this.placePieceOnBoard(row, col, currPiece);
           this.updateCurrentPlayerScore({
             currentPlayerId: this.currentPlayerId,
             currPiecePoint: currPiece.length + 1,
@@ -523,7 +497,6 @@ export default Vue.extend({
 
     playAITurn() {
       const ai = this.players[this.currentPlayerId];
-      console.log(ai);
 
       const pieceOptions = Object.keys(ai.remainingPieces)
         .reverse()
@@ -543,62 +516,36 @@ export default Vue.extend({
       availableMoves.sort(() => Math.random() - 0.5);
 
       for (const pieceId of pieceOptions) {
+        this.setCurrentPlayerSelectedPieceId({
+          currentPlayerId: this.currentPlayerId,
+          selectedPieceId: pieceId,
+        });
         const currPiece = ai.remainingPieces[pieceId].pieceCoords;
-        for (const move of availableMoves) {
-          const row = move[0];
-          const col = move[1];
-          if (this.isValidMove(currPiece, row, col)) {
-            this.gameBoard[row][col] = this.currentPlayerId + 1;
-
-            // place other pieces
-            for (let i = 0; i < currPiece.length; i++) {
-              let curr_row = row + currPiece[i][0];
-              let curr_col = col + currPiece[i][1];
-              this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
+        for (let i = 0; i < 3; i++) {
+          for (const move of availableMoves) {
+            const row = move[0];
+            const col = move[1];
+            if (this.isValidMove(currPiece, row, col)) {
+              this.placePieceOnBoard(row, col, currPiece);
+              this.updateCurrentPlayerScore({
+                currentPlayerId: this.currentPlayerId,
+                currPiecePoint: currPiece.length + 1,
+              });
+              return true;
             }
-
-            // reinitialize availablePlayerMoves for current player
-            this.availablePlayerMoves[this.currentPlayerId] = new Array(
-              this.boardSettings.totalCells
-            )
-              .fill(0)
-              .map(() => new Array(this.boardSettings.totalCells).fill(0));
-            // recompute availablePlayerMoves for current player
-            for (let i = 0; i < this.boardSettings.totalCells; i++) {
-              for (let j = 0; j < this.boardSettings.totalCells; j++) {
-                if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
-                  // check all corners for each piece
-                  for (const DIAG_DIR of DIAG_DIRS) {
-                    let canPlace = false;
-                    let diag_i = i + DIAG_DIR[0];
-                    let diag_j = j + DIAG_DIR[1];
-
-                    if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
-                      canPlace = this.checkHorizontalDirs(diag_i, diag_j);
-                    }
-
-                    if (canPlace) {
-                      this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
-                    }
-                  }
-                }
-              }
-            }
-            this.updateCurrentPlayerScore({
-              currentPlayerId: this.currentPlayerId,
-              currPiecePoint: currPiece.length + 1,
-            });
-            this.setCurrentPlayerSelectedPieceId({
-              currentPlayerId: this.currentPlayerId,
-              selectedPieceId: pieceId,
-            });
-            this.changePlayerTurn();
-            return;
           }
+
+          let rotateDirection = 'cw';
+          this.updateCurrentPieceCoordinateAfterRotation({
+            currentPlayerId: this.currentPlayerId,
+            rotateDirection: rotateDirection,
+            currentPiece: this.currPlayerSelectedPieceId,
+          });
         }
       }
 
       console.log('AI CANNOT PLACE PIECE!');
+      return false;
     },
 
     drawBoard(context) {
@@ -668,6 +615,11 @@ canvas {
   width: 100%;
 }
 
+.mobile-canvas {
+  position: fixed;
+  bottom: 25px;
+}
+
 .ai-player-area {
   pointer-events: none;
 }
@@ -675,6 +627,18 @@ canvas {
 @media screen and (min-width: 1023px) {
   .board-area {
     height: calc(100vh - 50px);
+  }
+
+  .mobile-canvas {
+    position: relative;
+    bottom: 0;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .mobile-canvas {
+    position: fixed;
+    bottom: 200px;
   }
 }
 </style>
