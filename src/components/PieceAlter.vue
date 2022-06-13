@@ -22,7 +22,7 @@
       class="bg-grey-2 rounded-borders q-pa-sm row justify-center selected-piece-focus"
       :style="{ color: players[this.playerId].color }"
     >
-      <canvas ref="canvas" width="300" :height="height"></canvas>
+      <canvas ref="canvas" width="330" :height="height"></canvas>
     </div>
   </div>
 </template>
@@ -42,7 +42,7 @@ export default Vue.extend({
     },
 
     startDrawCoordinate() {
-      return { x: 135, y: (this.height - this.cellSize) / 2 };
+      return { x: 150, y: (this.height - this.cellSize) / 2 };
     },
   },
   data() {

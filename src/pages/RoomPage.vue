@@ -1,9 +1,9 @@
 <template>
-  <div class="row wrap room">
+  <q-page class="room">
     <q-dialog v-model="winnerExist">
       <game-over-window />
     </q-dialog>
-    <!-- Responsive Tab  -->
+
     <div class="q-mx-auto lt-md">
       <div class="q-gutter-y-md" style="max-width: 400px">
         <q-tab-panels swipeable v-model="tab" animated style="background-color: #f2f4f7">
@@ -27,7 +27,6 @@
     </div>
 
     <div class="row items-center justify-evenly board-area">
-      <!-- Player 1 & 3 -->
       <div class="col-12 col-sm-3 flex items-center gt-sm">
         <player-area
           :playerId="0"
@@ -46,8 +45,7 @@
         />
       </div>
 
-      <!-- Board -->
-      <div class="col-12 col-sm-4 text-center">
+      <div class="col-12 col-sm-4 text-center q-pa-sm">
         <div class="full-width row justify-center items-center">
           <canvas
             ref="canvasRef"
@@ -56,10 +54,9 @@
             :height="boardSettings.height"
           />
         </div>
-        <!-- <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn> -->
+        <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
       </div>
 
-      <!-- Player 2 & 4 -->
       <div class="col-12 col-sm-3 flex justify-end gt-sm">
         <player-area
           :playerId="1"
@@ -78,7 +75,7 @@
         />
       </div>
     </div>
-  </div>
+  </q-page>
 </template>
 
 <script>
@@ -497,23 +494,7 @@ export default Vue.extend({
 
     playAITurn() {
       const ai = this.players[this.currentPlayerId];
-
-      const pieceOptions = Object.keys(ai.remainingPieces)
-        .reverse()
-        .reduce((filtered, pieceId) => {
-          if (!ai.remainingPieces[pieceId].isUsed) {
-            filtered.push(parseInt(pieceId));
-          }
-          return filtered;
-        }, []);
-
-      const availableMoves = [];
-      for (let row = 0; row < this.boardSettings.totalCells; row++) {
-        for (let col = 0; col < this.boardSettings.totalCells; col++) {
-          availableMoves.push([row, col]);
-        }
-      }
-      availableMoves.sort(() => Math.random() - 0.5);
+      const pieceOptions = ai.getPieceOptions();
 
       for (const pieceId of pieceOptions) {
         this.setCurrentPlayerSelectedPieceId({
@@ -522,7 +503,7 @@ export default Vue.extend({
         });
         const currPiece = ai.remainingPieces[pieceId].pieceCoords;
         for (let i = 0; i < 3; i++) {
-          for (const move of availableMoves) {
+          for (const move of ai.getRandomMoves()) {
             const row = move[0];
             const col = move[1];
             if (this.isValidMove(currPiece, row, col)) {
@@ -544,7 +525,6 @@ export default Vue.extend({
         }
       }
 
-      console.log('AI CANNOT PLACE PIECE!');
       return false;
     },
 
@@ -602,43 +582,22 @@ canvas {
 }
 
 .room {
-  position: relative;
-}
-
-.board {
-  position: absolute;
-  top: 5%;
-  left: 28%;
-}
-
-.board-area {
-  width: 100%;
-}
-
-.mobile-canvas {
-  position: fixed;
-  bottom: 25px;
+  height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .ai-player-area {
   pointer-events: none;
 }
 
-@media screen and (min-width: 1023px) {
-  .board-area {
-    height: calc(100vh - 50px);
-  }
-
-  .mobile-canvas {
-    position: relative;
-    bottom: 0;
-  }
-}
-
 @media screen and (min-width: 768px) {
-  .mobile-canvas {
-    position: fixed;
-    bottom: 200px;
+  .room {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
 }
 </style>

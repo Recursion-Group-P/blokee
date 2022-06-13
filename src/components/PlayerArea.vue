@@ -20,6 +20,7 @@
       </div>
       <div>
         <q-btn
+          v-if="!players[playerId].isAI"
           outline
           rounded
           color="grey-7"

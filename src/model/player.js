@@ -13,9 +13,30 @@ export class Player {
 }
 
 export class AIPlayer extends Player {
-  constructor(color, name, isAI = true) {
-    super(color, name, isAI)
+  constructor(color, name, totalCells, isAI = true) {
+    super(color, name, isAI);
+    this.totalCells = totalCells;
   }
 
-  // AI methods をこっちに移動？
+  getRandomMoves() {
+    const randomMoves = [];
+    for (let row = 0; row < this.totalCells; row++) {
+      for (let col = 0; col < this.totalCells; col++) {
+        randomMoves.push([row, col]);
+      }
+    }
+    randomMoves.sort(() => Math.random() - 0.5);
+    return randomMoves;
+  }
+
+  getPieceOptions() {
+    return Object.keys(this.remainingPieces)
+      .reverse()
+      .reduce((filtered, pieceId) => {
+        if (!this.remainingPieces[pieceId].isUsed) {
+          filtered.push(parseInt(pieceId));
+        }
+        return filtered;
+      }, []);
+  }
 }

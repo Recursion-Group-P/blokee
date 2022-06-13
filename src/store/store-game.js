@@ -21,11 +21,11 @@ const state = {
   },
   currentPlayerId: 0,
   currPiecePoint: 0,
-  players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1')],
+  players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14)],
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
-    players: [new Player(PLAYER_COLORS[0], 'YOU'), new Player(PLAYER_COLORS[1], 'CPU 1')],
+    players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14)],
   },
   winnerExist: false, // ゲーム終了時にtrueに変更
   // gameJudge: 0,
@@ -147,12 +147,12 @@ const actions = {
       commit('setBoardSettings', payload);
       commit('setPlayers', [
         new Player(PLAYER_COLORS[0], 'YOU'),
-        new AIPlayer(PLAYER_COLORS[1], 'CPU 1'),
+        new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
       ]);
       commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
-        players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1')],
+        players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14)],
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
@@ -173,22 +173,23 @@ const actions = {
       commit('setBoardSettings', payload);
       commit('setPlayers', [
         new Player(PLAYER_COLORS[0], 'YOU'),
-        new AIPlayer(PLAYER_COLORS[1], 'CPU 1'),
-        new AIPlayer(PLAYER_COLORS[2], 'CPU 2'),
-        new AIPlayer(PLAYER_COLORS[3], 'CPU 3'),
+        new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
+        new AIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
+        new AIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
       ]);
       commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
         players: [
           new Player(PLAYER_COLORS[0], 'YOU'),
-          new AIPlayer(PLAYER_COLORS[1], 'CPU 1'),
-          new AIPlayer(PLAYER_COLORS[2], 'CPU 2'),
-          new AIPlayer(PLAYER_COLORS[3], 'CPU 3'),
+          new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
+          new AIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
+          new AIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
         ],
       });
     }
     commit('setGameSettings', {
+      currentPlayerId: 0,
       numberOfPlayers: numberOfPlayers,
       timeForEachPlayer: timeForEachPlayer,
     });
