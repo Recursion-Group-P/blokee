@@ -136,10 +136,18 @@ export default Vue.extend({
     time: {
       handler(time) {
         if (time <= 0) {
+          this.stopTimer();
           this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
           this.$emit("passPlayerTurn");
         }
       },
+    },
+    currentPlayerId: {
+      handler(currentPlayerId) {
+        if (currentPlayerId === this.playerId) this.startTimer();
+        else this.stopTimer();
+      },
+      immediate: true,
     },
   },
 });

@@ -127,8 +127,6 @@ export default Vue.extend({
       canvas.addEventListener("mousemove", (event) => this.handleMouseMove(event));
       canvas.addEventListener("click", (event) => this.handleMouseClick(event));
     }
-    // player-areaのタイマー開始
-    this.$refs["player-area-" + this.currentPlayerId].startTimer();
   },
 
   data() {
@@ -252,24 +250,9 @@ export default Vue.extend({
         });
       }
 
-      let previousPlayerId = this.currentPlayerId;
-
       this.updateCurrentPlayerId();
 
-      this.controlTimer(previousPlayerId);
-
       this.drawBoard(this.context);
-    },
-
-    controlTimer(previousPlayerId) {
-      // 古いcurrentPlayerIdのTimerを停止
-      console.log("stop");
-      this.$refs["player-area-" + previousPlayerId].stopTimer();
-      // 新しいcurrentPlayerIdのTimerを開始
-      if (this.players[this.currentPlayerId].outOfGame === false) {
-        console.log("start");
-        this.$refs["player-area-" + this.currentPlayerId].startTimer();
-      }
     },
 
     inBounds(row, col) {
