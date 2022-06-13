@@ -20,13 +20,8 @@ export class Evaluation {
         for (let i = 0; i < this.players.length; i++) {
             if (this.players[i].outOfGame === true) outOfGameCount++;
         }
-        let allPlayersOutOfGame = true;
-        if (outOfGameCount < this.players.length) allPlayersOutOfGame = false;
 
-        // 1, 2のどちらかがtrueの時にゲームを終了する
-        let gameIsOver = allPlayersUsedUpAllPieces || allPlayersOutOfGame;
-
-        return gameIsOver;
+        return allPlayersUsedUpAllPieces || outOfGameCount === this.players.length;
     }
 
     // return: boolean
@@ -39,15 +34,15 @@ export class Evaluation {
         return remainingPiecesCounter === 0;
     }
 
-    // return: object
-    getFinalResult() {
-        let finalResult = [];
+    // return: array
+    getFinalResults() {
+        let finalResults = [];
         let players = this.players;
 
         for (let i = 0; i < players.length; i++) {
             if (this.checkIfUsedUpAllPieces(players[i].remainingPieces))
                 players[i].score += BONUS_POINTS["usedUpAllPieces"];
-            finalResult.push({
+            finalResults.push({
                 playerId: i,
                 score: players[i].score,
                 remainingTime: players[i].remainingTime,
@@ -55,18 +50,19 @@ export class Evaluation {
         }
 
         // scoreの降順にしてから、remainingTimeの降順に並び替える
-        let sortedFinalResult = finalResult.sort(function (a, b) {
+        let sortedFinalResults = finalResults.sort(function (a, b) {
             if (a.score !== b.score) return a.score < b.score ? 1 : -1;
             if (a.remainingTime !== b.remainingTime)
                 return a.remainingTime < b.remainingTime ? 1 : -1;
         });
 
-        return sortedFinalResult;
+        return sortedFinalResults;
     }
 
     // return: int
     getLastOnePieceBonus(currentPlayerId) {
-        if (this.checkIfTheLastPieceHasOnlyOneCell(currentPlayerId)) return BONUS_POINTS["lastOneCellPiece"];
+        if (this.checkIfTheLastPieceHasOnlyOneCell(currentPlayerId))
+            return BONUS_POINTS["lastOneCellPiece"];
         else return 0;
     }
 

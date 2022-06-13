@@ -12,7 +12,7 @@
           <div class="col">Time Left</div>
         </div>
         <div
-          v-for="(r, index) in finalResult"
+          v-for="(result, index) in finalResults"
           :key="index"
           class="row text-h6 q-mb-sm"
           style="line-height: 45px"
@@ -20,14 +20,14 @@
           <div class="col-1">
             <div
               class="rank-badge text-white shadow-1"
-              :style="`background-color: ${playerColor[r['playerId']]};`"
+              :style="`background-color: ${playerColor[result.playerId]};`"
             >
               {{ index + 1 }}
             </div>
           </div>
-          <div class="col">Player {{ r["playerId"] + 1 }}</div>
-          <div class="col">{{ r["score"] }}</div>
-          <div class="col">{{ formatTime(r["remainingTime"]) }}</div>
+          <div class="col">Player {{ result.playerId + 1 }}</div>
+          <div class="col">{{ result.score }}</div>
+          <div class="col">{{ formatTime(result.remainingTime) }}</div>
         </div>
       </div>
     </q-card-section>
@@ -89,10 +89,10 @@ export default Vue.extend({
       "players",
     ]),
 
-    finalResult() {
+    finalResults() {
       let evaluation = new Evaluation(this.players);
-      let finalResult = evaluation.getFinalResult();
-      return finalResult;
+      let finalResults = evaluation.getFinalResults();
+      return finalResults;
     },
   },
 
