@@ -18,11 +18,16 @@ export default {
     ...mapGetters("game", ["currentPlayerId"]),
   },
   methods: {
-    ...mapActions("game", ["updatePlayerOutOfGame", "updateCurrentPlayerId"]),
+    ...mapActions("game", [
+      "updatePlayerOutOfGame",
+      "updateCurrentPlayerId",
+      "updateGameIsOver",
+    ]),
 
     pass() {
       this.updatePlayerOutOfGame({ currentPlayerId: this.playerId });
       this.updateCurrentPlayerId();
+      this.updateGameIsOver();
       this.$emit("hideConfirmPassArea");
       this.$emit("stopTimer");
     },
