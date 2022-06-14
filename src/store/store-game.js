@@ -1,6 +1,7 @@
 import { Player } from "src/model/player";
 import { PLAYER_COLORS } from "src/constants";
 import { Platform } from "quasar";
+import { Evaluation } from "src/model/evaluation";
 
 const state = {
   numberOfPlayers: 2,
@@ -24,7 +25,7 @@ const state = {
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
     players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
   },
-  winnerExist: false, // ゲーム終了時にtrueに変更
+  gameIsOver: false, // ゲームが終了したかどうか
   // gameJudge: 0,
 };
 
@@ -108,30 +109,36 @@ const mutations = {
   },
 
   updateCurrentPlayerId(state, payload) {
-    // state.winnerExist = new Evaluation(state.players, payload.gameOverCount).checkWinner();
-    // if (state.winnerExist) return;
     state.currentPlayerId = payload["nextPlayerId"];
   },
 
   updatePlayerOutOfGame(state, payload) {
-    console.log("before: " + state.players[payload["currentPlayerId"]].outOfGame);
     state.players[payload["currentPlayerId"]].outOfGame = true;
     // state.gameJudge++
-    console.log("after: " + state.players[payload["currentPlayerId"]].outOfGame);
   },
 
   updateCurrentPlayerScore(state, payload) {
     state.players[payload["currentPlayerId"]].score += payload["currPiecePoint"];
   },
-
   resetCurrentPlayer(state, payload) {
     state.currentPlayerId = payload["currentPlayerId"]
-  }
+  },
+  updateGameIsOver(state, payload) {
+    state.gameIsOver = payload;
+  },
+
+  // stateのデータを初期化
+  formatState(state, payload) {
+    Object.assign(state, payload);
+  },
+
+  recordRemainingTime(state, payload) {
+    state.players[payload.currentPlayerId].remainingTime = payload.remainingTime;
+  },
 };
 
 const actions = {
   setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }) {
-    // console.log(timeForEachPlayer);
     if (numberOfPlayers == 2) {
       let startingPositions = null;
       if (startPosition == "Corner")
@@ -259,7 +266,46 @@ const actions = {
 
   resetCurrentPlayer({ commit }, { currentPlayerId }) {
     commit("resetCurrentPlayer", { currentPlayerId });
-  }
+  },
+
+  updateGameIsOver({ commit }) {
+    commit("updateGameIsOver", new Evaluation(state.players).checkIfGameIsOver());
+  },
+
+  // stateのデータを初期化する
+  formatState({ commit }) {
+    function getDefaultState() {
+      return {
+        numberOfPlayers: 2,
+        timeForEachPlayer: 600, // 600 = 10mins
+        startPosition: "Corner", // ["Center", "Corner", "Anywhere"]
+        boardSettings: {
+          width: Platform.is.desktop ? 490 : 350,
+          height: Platform.is.desktop ? 490 : 350,
+          totalCells: 14,
+          cellWidth: Platform.is.desktop ? 35 : 25,
+          startingPositions: [
+            [0, 0],
+            [13, 13],
+          ],
+        },
+        currentPlayerId: 0,
+        currPiecePoint: 0,
+        players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+        replay: {
+          boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
+          usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
+          players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+        },
+        gameIsOver: false, // ゲームが終了したかどうか
+      };
+    }
+    commit("formatState", getDefaultState());
+  },
+
+  recordRemainingTime({ commit }, { currentPlayerId, remainingTime }) {
+    commit("recordRemainingTime", { currentPlayerId, remainingTime });
+  },
 };
 
 const getters = {
@@ -291,8 +337,8 @@ const getters = {
     return state.currentPlayerId;
   },
 
-  winnerExist(state) {
-    return state.winnerExist;
+  gameIsOver(state) {
+    return state.gameIsOver;
   },
 };
 

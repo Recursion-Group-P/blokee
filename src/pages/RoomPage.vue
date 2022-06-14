@@ -1,6 +1,6 @@
 <template>
   <div class="row wrap room">
-    <q-dialog v-model="winnerExist">
+    <q-dialog v-model="gameIsOver">
       <game-over-window />
     </q-dialog>
     <!-- Responsive Tab  -->
@@ -107,6 +107,8 @@ import { mapGetters, mapActions } from "vuex";
 // Vue
 import Vue from "vue";
 import { Platform } from "quasar";
+import { Evaluation } from "src/model/evaluation";
+// import { BONUS_POINTS } from "src/constants/index";
 
 export default Vue.extend({
   components: {
@@ -139,6 +141,7 @@ export default Vue.extend({
       canvas: null,
       tab: "player1",
       showModal: false,
+      roomPageKey: 0,
     };
   },
 
@@ -181,7 +184,7 @@ export default Vue.extend({
       "players",
       "currentPlayerId",
       "currPiecePoint",
-      "winnerExist",
+      "gameIsOver",
     ]),
 
     currPlayer() {
@@ -223,7 +226,8 @@ export default Vue.extend({
       "addReplayState",
       "updateCurrentPlayerId",
       "updateCurrentPlayerScore",
-      "resetCurrentPlayer"
+      "resetCurrentPlayer",
+      "updateGameIsOver",
     ]),
 
     notifyInvalid() {
@@ -253,6 +257,8 @@ export default Vue.extend({
         });
       }
 
+      this.updateGameIsOver();
+
       let previousPlayerId = this.currentPlayerId;
 
       this.updateCurrentPlayerId();
@@ -264,11 +270,9 @@ export default Vue.extend({
 
     controlTimer(previousPlayerId) {
       // 古いcurrentPlayerIdのTimerを停止
-      console.log("stop");
       this.$refs["player-area-" + previousPlayerId].stopTimer();
       // 新しいcurrentPlayerIdのTimerを開始
       if (this.players[this.currentPlayerId].outOfGame === false) {
-        console.log("start");
         this.$refs["player-area-" + this.currentPlayerId].startTimer();
       }
     },
@@ -422,10 +426,13 @@ export default Vue.extend({
               }
             }
           }
+          let evaluation = new Evaluation(this.players);
+          let lastOnePieceBonus = evaluation.getLastOnePieceBonus(this.currentPlayerId);
           this.updateCurrentPlayerScore({
             currentPlayerId: this.currentPlayerId,
-            currPiecePoint: currPiece.length + 1,
+            currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
           });
+
           this.changePlayerTurn();
         } else {
           this.notifyInvalid();
