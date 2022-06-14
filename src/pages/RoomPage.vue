@@ -449,7 +449,7 @@ export default Vue.extend({
 
       if (this.isDragging) {
         let mouseX = event.targetTouches[0].pageX - this.canvas.offsetLeft;
-        let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop - 50;
+        let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop - 120;
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
@@ -468,7 +468,7 @@ export default Vue.extend({
 
       if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
         let mouseX = event.changedTouches[0].pageX - this.canvas.offsetLeft;
-        let mouseY = event.changedTouches[0].pageY - this.canvas.offsetTop - 50;
+        let mouseY = event.changedTouches[0].pageY - this.canvas.offsetTop - 120;
 
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
@@ -503,7 +503,7 @@ export default Vue.extend({
         });
         const currPiece = ai.remainingPieces[pieceId].pieceCoords;
         for (let i = 0; i < 3; i++) {
-          for (const move of ai.getRandomMoves()) {
+          for (const move of ai.getRandomMoves(this.gameBoard)) {
             const row = move[0];
             const col = move[1];
             if (this.isValidMove(currPiece, row, col)) {
