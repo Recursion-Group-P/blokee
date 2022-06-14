@@ -27,17 +27,17 @@ export default function ({ store /*, ssrContext */ }) {
   });
 
   // Guard routes
-  Router.beforeEach(async (to, from, next) => {
-    await store.dispatch("auth/onAuth");
-    if (
-      to.matched.some((record) => record.meta.requiresAuth) &&
-      !store.getters["auth/loggedIn"]
-    ) {
-      next("/");
-    } else {
-      next();
-    }
-  });
+  // Router.beforeEach(async (to, from, next) => {
+  //   await store.dispatch("auth/onAuth");
+  //   if (
+  //     to.matched.some((record) => record.meta.requiresAuth) &&
+  //     !store.getters["auth/loggedIn"]
+  //   ) {
+  //     next("/");
+  //   } else {
+  //     next();
+  //   }
+  // });
 
   return Router;
 }
