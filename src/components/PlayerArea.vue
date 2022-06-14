@@ -108,7 +108,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapActions("game", ["updatePlayerOutOfGame"]),
+    ...mapActions("game", ["updatePlayerOutOfGame", "recordRemainingTime"]),
     // for timer
     countDown() {
       this.time--;
@@ -121,6 +121,10 @@ export default Vue.extend({
     },
     stopTimer() {
       clearInterval(this.timerObj);
+      this.recordRemainingTime({
+        currentPlayerId: this.playerId,
+        remainingTime: this.time,
+      });
     },
     selectPiece(e) {
       this.selectedPieceId = e;

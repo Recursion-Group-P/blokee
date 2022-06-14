@@ -1,6 +1,6 @@
 <template>
   <q-page class="room">
-    <q-dialog v-model="winnerExist">
+    <q-dialog v-model="gameIsOver">
       <game-over-window />
     </q-dialog>
 
@@ -87,8 +87,10 @@ import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
 // Vuex
 import { mapGetters, mapActions } from 'vuex';
 // Vue
-import Vue from 'vue';
-import { Platform } from 'quasar';
+import Vue from "vue";
+import { Platform } from "quasar";
+import { Evaluation } from "src/model/evaluation";
+// import { BONUS_POINTS } from "src/constants/index";
 
 export default Vue.extend({
   components: {
@@ -123,6 +125,7 @@ export default Vue.extend({
       canvas: null,
       tab: '0',
       showModal: false,
+      roomPageKey: 0,
     };
   },
 
@@ -159,14 +162,14 @@ export default Vue.extend({
   },
 
   computed: {
-    ...mapGetters('game', [
-      'timeForEachPlayer',
-      'numberOfPlayers',
-      'boardSettings',
-      'players',
-      'currentPlayerId',
-      'currPiecePoint',
-      'winnerExist',
+    ...mapGetters("game", [
+      "timeForEachPlayer",
+      "numberOfPlayers",
+      "boardSettings",
+      "players",
+      "currentPlayerId",
+      "currPiecePoint",
+      "gameIsOver",
     ]),
 
     innerWidth() {
@@ -206,13 +209,13 @@ export default Vue.extend({
   },
 
   methods: {
-    ...mapActions('game', [
-      'setCurrentPlayerSelectedPieceId',
-      'updateCurrentPlayerRemainingPieces',
-      'addReplayState',
-      'updateCurrentPlayerId',
-      'updateCurrentPlayerScore',
-      'updateCurrentPieceCoordinateAfterRotation',
+    ...mapActions("game", [
+      "setCurrentPlayerSelectedPieceId",
+      "updateCurrentPlayerRemainingPieces",
+      "addReplayState",
+      "updateCurrentPlayerId",
+      "updateCurrentPlayerScore",
+      "updateGameIsOver",
     ]),
 
     notifyInvalid() {
@@ -243,6 +246,8 @@ export default Vue.extend({
         });
       }
 
+      this.updateGameIsOver();
+
       let previousPlayerId = this.currentPlayerId;
 
       this.updateCurrentPlayerId();
@@ -271,12 +276,10 @@ export default Vue.extend({
 
     controlTimer(previousPlayerId) {
       // 古いcurrentPlayerIdのTimerを停止
-      console.log('stop');
-      this.$refs['player-area-' + previousPlayerId].stopTimer();
+      this.$refs["player-area-" + previousPlayerId].stopTimer();
       // 新しいcurrentPlayerIdのTimerを開始
       if (this.players[this.currentPlayerId].outOfGame === false) {
-        console.log('start');
-        this.$refs['player-area-' + this.currentPlayerId].startTimer();
+        this.$refs["player-area-" + this.currentPlayerId].startTimer();
       }
     },
 
@@ -433,8 +436,9 @@ export default Vue.extend({
           this.placePieceOnBoard(row, col, currPiece);
           this.updateCurrentPlayerScore({
             currentPlayerId: this.currentPlayerId,
-            currPiecePoint: currPiece.length + 1,
+            currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
           });
+
           this.changePlayerTurn();
         } else {
           this.notifyInvalid();
