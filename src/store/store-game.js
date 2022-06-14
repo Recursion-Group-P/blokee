@@ -121,9 +121,12 @@ const mutations = {
   },
 
   updateCurrentPlayerScore(state, payload) {
-    console.log(payload);
     state.players[payload["currentPlayerId"]].score += payload["currPiecePoint"];
   },
+
+  resetCurrentPlayer(state, payload) {
+    state.currentPlayerId = payload["currentPlayerId"]
+  }
 };
 
 const actions = {
@@ -253,6 +256,10 @@ const actions = {
   updateCurrentPlayerScore({ commit }, { currentPlayerId, currPiecePoint }) {
     commit("updateCurrentPlayerScore", { currentPlayerId, currPiecePoint });
   },
+
+  resetCurrentPlayer({ commit }, { currentPlayerId }) {
+    commit("resetCurrentPlayer", { currentPlayerId });
+  }
 };
 
 const getters = {

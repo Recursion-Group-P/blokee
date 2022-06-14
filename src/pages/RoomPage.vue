@@ -223,6 +223,7 @@ export default Vue.extend({
       "addReplayState",
       "updateCurrentPlayerId",
       "updateCurrentPlayerScore",
+      "resetCurrentPlayer"
     ]),
 
     notifyInvalid() {
@@ -590,6 +591,24 @@ export default Vue.extend({
         }
       }
     },
+    confirmSave (event) {
+      event.returnValue = "check";
+    },
+  },
+  created () {
+    window.addEventListener("beforeunload", this.confirmSave);
+  },
+  destroyed () {
+    window.removeEventListener("beforeunload", this.confirmSave);
+  },
+  beforeRouteLeave (to, from, next) {
+    const answer = window.confirm("進行中のゲームを終了しますか？")
+    if (answer) {
+      this.resetCurrentPlayer({currentPlayerId: 0,});
+      next()
+    } else {
+      next(false)
+    }
   },
 });
 </script>
