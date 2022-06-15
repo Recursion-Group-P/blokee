@@ -33,9 +33,7 @@
     </q-card-section>
     <q-card-actions>
       <div class="full-width text-center q-mb-md">
-        <q-btn rounded color="blue-grey" class="q-px-md" to="/replay"
-          >Review the game</q-btn
-        >
+        <q-btn rounded color="dark" class="q-px-md" to="/replay">Review the game</q-btn>
       </div>
       <div class="full-width text-center q-mb-sm">
         <div>New game?</div>
@@ -51,17 +49,12 @@
         >
       </div> -->
       <div class="full-width text-center q-mb-sm">
-        <q-btn
-          rounded
-          color="blue-grey"
-          class="q-px-md"
-          to="/settings"
-          @click="newGameWithNewSettings"
+        <q-btn rounded color="dark" class="q-px-md" to="/settings"
           >Go to settings page</q-btn
         >
       </div>
       <div class="full-width text-center">
-        <q-btn flat round color="grey-9" icon="home" to="/"></q-btn>
+        <q-btn flat round color="dark" icon="home" to="/"></q-btn>
       </div>
     </q-card-actions>
   </q-card>
@@ -112,9 +105,6 @@ export default Vue.extend({
     //     startPosition: currentSettings.startPosition,
     //   });
     // },
-    newGameWithNewSettings() {
-      this.formatState();
-    },
     formatTime(remainingTime) {
       let min = Math.floor(remainingTime / 60);
       let sec = ("00" + (remainingTime % 60)).slice(-2);
