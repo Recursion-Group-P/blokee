@@ -5,14 +5,14 @@
       'no-pointer-events': players[playerId].outOfGame === true,
       disabled: players[playerId].outOfGame === true,
     }"
-    :style="`background-color: ${playerColor}; width: ${
-      numberOfPlayers === 2 ? '100%' : '80%'
-    }`"
+    :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
   >
     <div class="row justify-between" style="height: 50px">
-      <h6 class="q-ma-none">Player {{ playerId + 1 }}</h6>
+      <h6 class="q-ma-none">
+        <strong>{{ this.players[this.playerId].name }}</strong>
+      </h6>
       <h6 class="q-ma-none player-score">
-        {{ "Score: " + this.players[this.playerId].score }}
+        {{ 'Score: ' + this.players[this.playerId].score }}
       </h6>
       <div class="q-mb-md row" :class="{ 'text-red-8': time <= 10 && time >= 1 }">
         <q-icon name="timer" size="1.5rem"></q-icon>
@@ -20,9 +20,11 @@
       </div>
       <div>
         <q-btn
-          outline
+          v-if="!players[playerId].isAI"
+          filled
           rounded
-          color="grey-7"
+          color="white"
+          text-color="blue-grey"
           size="sm"
           padding="sm md"
           label="Pass"
@@ -45,6 +47,7 @@
       v-if="confirmPassArea === true"
       @hideConfirmPassArea="toggleConfirmPassArea"
       @stopTimer="stopTimer"
+      @passPlayerTurn="passPlayerTurn"
       :player-id="playerId"
     />
     <div
@@ -59,41 +62,36 @@
 
 <script>
 // Components
-import PieceAlter from "./PieceAlter.vue";
-import PieceSelector from "./PieceSelector.vue";
-import ConfirmPass from "./ConfirmPass.vue";
+import PieceAlter from './PieceAlter.vue';
+import PieceSelector from './PieceSelector.vue';
+import ConfirmPass from './ConfirmPass.vue';
 // Constants
-import { PLAYER_COLORS } from "src/constants";
+import { PLAYER_COLORS } from 'src/constants';
 // Vuex
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters, mapActions } from 'vuex';
 // Vue
-import Vue from "vue";
+import Vue from 'vue';
 
 export default Vue.extend({
-  props: ["playerId"],
+  props: ['playerId'],
   components: {
-    "piece-alter": PieceAlter,
-    "piece-selector": PieceSelector,
-    "confirm-pass": ConfirmPass,
+    'piece-alter': PieceAlter,
+    'piece-selector': PieceSelector,
+    'confirm-pass': ConfirmPass,
   },
   data() {
     return {
       // For timer
-      playerColor: PLAYER_COLORS[this.playerId] + "66",
       time: 0,
       timerObj: null,
       selectedPieceId: -1,
       // For Confirm Pass
       confirmPassArea: false,
+      isWatching: true,
     };
   },
   computed: {
-    ...mapGetters("game", [
-      "players",
-      "numberOfPlayers",
-      "timeForEachPlayer",
-      "currentPlayerId",
-    ]),
+    ...mapGetters('game', ['players', 'numberOfPlayers', 'timeForEachPlayer', 'currentPlayerId']),
 
     currPlayerSelectedPieceId() {
       return this.players[this.playerId].selectedPieceId;
@@ -101,13 +99,19 @@ export default Vue.extend({
 
     formatTime() {
       let min = Math.floor(this.time / 60);
-      let sec = ("00" + (this.time % 60)).slice(-2);
+      let sec = ('00' + (this.time % 60)).slice(-2);
       let formatTime = `${min}:${sec}`;
       return formatTime;
     },
+
+    playerColor() {
+      return this.currentPlayerId === this.playerId
+        ? this.players[this.playerId].color
+        : this.players[this.playerId].color + '66'; //TODO: indicator for current player
+    },
   },
   methods: {
-    ...mapActions("game", ["updatePlayerOutOfGame", "recordRemainingTime"]),
+    ...mapActions('game', ['updatePlayerOutOfGame', 'recordRemainingTime']),
     // for timer
     countDown() {
       this.time--;
@@ -131,6 +135,9 @@ export default Vue.extend({
     toggleConfirmPassArea() {
       this.confirmPassArea = !this.confirmPassArea;
     },
+    passPlayerTurn() {
+      this.$emit('passPlayerTurn');
+    },
   },
   mounted() {
     this.time = this.timeForEachPlayer;
@@ -140,10 +147,27 @@ export default Vue.extend({
     time: {
       handler(time) {
         if (time <= 0) {
+          this.stopTimer();
           this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
-          this.$emit("passPlayerTurn");
+          this.$emit('passPlayerTurn');
         }
       },
+    },
+    currentPlayerId: {
+      handler(currentPlayerId) {
+        if (currentPlayerId === this.playerId) this.startTimer();
+        else this.stopTimer();
+      },
+      immediate: true,
+    },
+    players: {
+      handler(players) {
+        if (players[this.playerId].outOfGame === true && this.isWatching) {
+          this.stopTimer();
+          this.isWatching = false;
+        }
+      },
+      deep: true,
     },
   },
 });

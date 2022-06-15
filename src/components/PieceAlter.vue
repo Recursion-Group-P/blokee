@@ -1,43 +1,35 @@
 <template>
-  <div>
-    <div>
-      <div class="row justify-around q-mb-sm">
-        <q-btn filled color="blue-grey" round icon="flip" @click="flipPiece" />
-        <q-btn
-          filled
-          color="blue-grey"
-          round
-          icon="rotate_90_degrees_ccw"
-          @click="turnPiece90DegreeCounterClockwise"
-        />
-        <q-btn
-          filled
-          color="blue-grey"
-          round
-          icon="rotate_90_degrees_cw"
-          @click="turnPiece90DegreeClockwise"
-        />
-        <q-btn
-          filled
-          color="white"
-          text-color="blue-grey"
-          round
-          icon="close"
-          @click="cancelPiece"
-        />
-      </div>
-      <div
-        class="bg-grey-2 rounded-borders q-pa-sm row justify-center selected-piece-focus"
-        :style="{ color: players[this.playerId].color }"
-      >
-        <canvas ref="canvas" width="250" height="250"></canvas>
-      </div>
+  <div style="width: 100%">
+    <div class="row justify-around q-mb-md">
+      <q-btn filled color="blue-grey" round icon="flip" @click="flipPiece" />
+      <q-btn
+        filled
+        color="blue-grey"
+        round
+        icon="fa-solid fa-rotate-left"
+        @click="turnPiece90DegreeCounterClockwise"
+      />
+      <q-btn
+        filled
+        color="blue-grey"
+        round
+        icon="fa-solid fa-rotate-right"
+        @click="turnPiece90DegreeClockwise"
+      />
+      <q-btn filled color="white" text-color="blue-grey" round icon="close" @click="cancelPiece" />
+    </div>
+    <div
+      class="bg-grey-2 rounded-borders q-pa-sm row justify-center"
+      :style="{ color: players[this.playerId].color }"
+    >
+      <canvas ref="canvas" width="330" :height="height"></canvas>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
+import { Platform } from 'quasar';
 import Vue from 'vue';
 
 export default Vue.extend({
@@ -48,11 +40,15 @@ export default Vue.extend({
     currPlayerSelectedPieceId() {
       return this.players[this.playerId].selectedPieceId;
     },
+
+    startDrawCoordinate() {
+      return { x: 150, y: (this.height - this.cellSize) / 2 };
+    },
   },
   data() {
     return {
+      height: Platform.is.desktop ? 250 : 150,
       cellSize: 30,
-      startDrawCoordinate: { x: 110, y: 110 },
       pieceCoordinate: null,
     };
   },
@@ -96,16 +92,16 @@ export default Vue.extend({
       );
 
       // Draw other piece
-      for (let i = 0; i < pieceCoordinate.length; i++) {
+      for (const cell of pieceCoordinate) {
         ctx.fillRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          cell[1] * this.cellSize + this.startDrawCoordinate['x'],
+          cell[0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
         ctx.strokeRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          cell[1] * this.cellSize + this.startDrawCoordinate['x'],
+          cell[0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
@@ -154,7 +150,4 @@ export default Vue.extend({
 </script>
 
 <style>
-.selected-piece-focus {
-  box-shadow: inset 0 0 6px 2px;
-}
 </style>

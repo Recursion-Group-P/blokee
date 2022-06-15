@@ -26,10 +26,12 @@ export default {
 
     pass() {
       this.updatePlayerOutOfGame({ currentPlayerId: this.playerId });
-      this.updateCurrentPlayerId();
-      this.updateGameIsOver();
+      // this.updateCurrentPlayerId();
+      // this.updateGameIsOver();
       this.$emit("hideConfirmPassArea");
       this.$emit("stopTimer");
+
+      this.$emit("passPlayerTurn");
     },
     hideConfirmPassArea() {
       this.$emit("hideConfirmPassArea");

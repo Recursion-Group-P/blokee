@@ -25,11 +25,7 @@
     <div class="row items-center justify-evenly board-area">
       <div class="col-12 col-sm-3 flex items-center gt-sm">
         <replay-player-area class="q-mb-md" :playerId="0" style="height: 50%" />
-        <replay-player-area
-          v-if="numberOfPlayers > 2"
-          :playerId="2"
-          style="height: 50%"
-        />
+        <replay-player-area v-if="numberOfPlayers > 2" :playerId="2" style="height: 50%" />
       </div>
 
       <!-- board -->
@@ -53,12 +49,7 @@
             icon="fa-solid fa-play"
             color="blue-grey"
           ></q-btn>
-          <q-btn
-            v-else
-            @click="stopReplay"
-            icon="fa-solid fa-pause"
-            color="warning"
-          ></q-btn>
+          <q-btn v-else @click="stopReplay" icon="fa-solid fa-pause" color="warning"></q-btn>
           <q-btn
             @click="handleReplay(true)"
             :disabled="replayIdx === replay.boardStates.length - 1"
@@ -79,28 +70,24 @@
 
       <div class="col-12 col-sm-3 flex justify-end gt-sm">
         <replay-player-area class="q-mb-md" :playerId="1" style="height: 50%" />
-        <replay-player-area
-          v-if="numberOfPlayers > 2"
-          :playerId="3"
-          style="height: 50%"
-        />
+        <replay-player-area v-if="numberOfPlayers > 2" :playerId="3" style="height: 50%" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ReplayPlayerArea from "src/components/ReplayPlayerArea.vue";
-import { PLAYER_COLORS } from "src/constants";
-import { mapGetters, mapActions } from "vuex";
+import ReplayPlayerArea from 'src/components/ReplayPlayerArea.vue';
+import { PLAYER_COLORS } from 'src/constants';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
-    "replay-player-area": ReplayPlayerArea,
+    'replay-player-area': ReplayPlayerArea,
   },
 
   computed: {
-    ...mapGetters("game", ["boardSettings", "numberOfPlayers", "replay"]),
+    ...mapGetters('game', ['boardSettings', 'numberOfPlayers', 'replay']),
 
     gameBoard() {
       return this.replay.boardStates[this.replayIdx];
@@ -109,17 +96,18 @@ export default {
 
   data() {
     return {
+      pieceSound: new Audio(require('../assets/sounds/piece.mp3')),
       replayIdx: 0,
       currentPlayerId: 0,
       context: null,
-      tab: "0",
+      tab: '0',
       interval: null,
       isPlaying: false,
     };
   },
 
   mounted() {
-    const context = this.$refs.replayCanvasRef.getContext("2d");
+    const context = this.$refs.replayCanvasRef.getContext('2d');
     if (context !== null) {
       this.context = context;
       this.drawBoard(context);
@@ -127,11 +115,13 @@ export default {
   },
 
   methods: {
-    ...mapActions("game", ["updateReplayCurrentPlayerRemainingPieces"]),
+    ...mapActions('game', ['updateReplayCurrentPlayerRemainingPieces']),
 
     handleReplay(increment) {
       if (increment) {
         if (this.replayIdx < this.replay.boardStates.length - 1) {
+          this.pieceSound.play();
+
           // update current player remaining pieces
           this.updateReplayCurrentPlayerRemainingPieces({
             currentPlayerId: this.currentPlayerId,
@@ -140,19 +130,17 @@ export default {
           });
 
           this.currentPlayerId =
-            this.currentPlayerId + 1 >= this.numberOfPlayers
-              ? 0
-              : this.currentPlayerId + 1;
+            this.currentPlayerId + 1 >= this.numberOfPlayers ? 0 : this.currentPlayerId + 1;
           this.tab = this.currentPlayerId.toString();
           this.replayIdx++;
         }
       } else {
         if (this.replayIdx > 0) {
+          this.pieceSound.play();
+          
           this.replayIdx--;
           this.currentPlayerId =
-            this.currentPlayerId - 1 < 0
-              ? this.numberOfPlayers - 1
-              : this.currentPlayerId - 1;
+            this.currentPlayerId - 1 < 0 ? this.numberOfPlayers - 1 : this.currentPlayerId - 1;
           this.tab = this.currentPlayerId.toString();
 
           // update current player remaining pieces
@@ -170,7 +158,7 @@ export default {
     drawBoard(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-      context.strokeStyle = "white";
+      context.strokeStyle = 'white';
       context.lineWidth = 2;
 
       for (let i = 0; i < this.boardSettings.totalCells; i++) {
@@ -184,7 +172,7 @@ export default {
               this.boardSettings.cellWidth
             );
           } else {
-            context.fillStyle = "#CDD5DF";
+            context.fillStyle = '#CDD5DF';
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
