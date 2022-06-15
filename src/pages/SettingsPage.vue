@@ -12,6 +12,11 @@
                             label="Number of players"
                         />
                         <q-select
+                            v-model="numberOfCPU"
+                            :options="numberOfCPUOptions"
+                            label="Number of CPU"
+                        />
+                        <q-select
                             v-model="timeForEachPlayer"
                             :options="timeForEachPlayerOptions"
                             label="Time for each player"
@@ -26,9 +31,8 @@
                             @click="gameStart"
                             to="/room"
                             unelevated
-                            rounded
-                            color="primary"
-                            label="Game Start"
+                            color="black"
+                            label="Play"
                         />
                     </q-card-section>
                 </q-card>
@@ -48,6 +52,8 @@ export default Vue.extend({
         return {
             numberOfPlayers: Config.numberOfPlayers,
             numberOfPlayersOptions: Config.numberOfPlayersOptions,
+            numberOfCPU: Config.numberOfCPU,
+            numberOfCPUOptions: Config.numberOfCPUOptions,
             timeForEachPlayer: Config.timeForEachPlayer,
             timeForEachPlayerOptions: Config.timeForEachPlayerOptions,
             startPosition: Config.startPosition,

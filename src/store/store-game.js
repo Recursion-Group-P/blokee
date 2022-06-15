@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-import { Player, AIPlayer } from 'src/model/player';
+import { Player, RandomAIPlayer, MediumRandomAIPlayer } from 'src/model/player';
 import { PLAYER_COLORS } from 'src/constants';
 import { Platform } from 'quasar';
-=======
-import { Player } from "src/model/player";
-import { PLAYER_COLORS } from "src/constants";
-import { Platform } from "quasar";
-import { Evaluation } from "src/model/evaluation";
->>>>>>> 632f76ce27f20839a330159b06d261da2a12cd03
+import { Evaluation } from 'src/model/evaluation';
 
 const state = {
   numberOfPlayers: 2,
@@ -28,14 +22,21 @@ const state = {
   },
   currentPlayerId: 0,
   currPiecePoint: 0,
-  players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14)],
+  // players: [new Player(PLAYER_COLORS[0], 'YOU'), new Player(PLAYER_COLORS[1], 'Other')], // local
+  players: [new Player(PLAYER_COLORS[0], 'YOU'), new MediumRandomAIPlayer(PLAYER_COLORS[1], 'Medium 1', 14)],
+  // players: [
+  //   new MediumRandomAIPlayer(PLAYER_COLORS[0], 'CPU 1', 14),
+  //   new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 2', 14),
+  // ], // CPU VS CPU
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
     usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
-    players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14)],
+    players: [
+      new Player(PLAYER_COLORS[0], 'YOU'),
+      new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
+    ],
   },
   gameIsOver: false, // ゲームが終了したかどうか
-  // gameJudge: 0,
 };
 
 const mutations = {
@@ -116,30 +117,15 @@ const mutations = {
   },
 
   updateCurrentPlayerId(state, payload) {
-<<<<<<< HEAD
-    // state.winnerExist = new Evaluation(state.players, payload.gameOverCount).checkWinner();
-    // if (state.winnerExist) return;
-    state.currentPlayerId = payload['nextPlayerId'];
+    state.currentPlayerId = payload.nextPlayerId;
   },
 
   updatePlayerOutOfGame(state, payload) {
-    console.log('before: ' + state.players[payload['currentPlayerId']].outOfGame);
-    state.players[payload['currentPlayerId']].outOfGame = true;
-    // state.gameJudge++
-    console.log('after: ' + state.players[payload['currentPlayerId']].outOfGame);
-=======
-    state.currentPlayerId = payload["nextPlayerId"];
-  },
-
-  updatePlayerOutOfGame(state, payload) {
-    state.players[payload["currentPlayerId"]].outOfGame = true;
-    // state.gameJudge++
->>>>>>> 632f76ce27f20839a330159b06d261da2a12cd03
+    state.players[payload.currentPlayerId].outOfGame = true;
   },
 
   updateCurrentPlayerScore(state, payload) {
-    console.log(payload);
-    state.players[payload['currentPlayerId']].score += payload['currPiecePoint'];
+    state.players[payload.currentPlayerId].score += payload.currPiecePoint;
   },
 
   updateGameIsOver(state, payload) {
@@ -152,6 +138,8 @@ const mutations = {
   },
 
   recordRemainingTime(state, payload) {
+    // console.log(state.players[payload.currentPlayerId].name);
+    // console.log(payload.remainingTime);
     state.players[payload.currentPlayerId].remainingTime = payload.remainingTime;
   },
 };
@@ -160,11 +148,22 @@ const actions = {
   setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }) {
     if (numberOfPlayers == 2) {
       let startingPositions = null;
-      if (startPosition == 'Corner')
-        startingPositions = [
-          [0, 0],
-          [13, 13],
-        ];
+      switch (startPosition) {
+        case 'Corner':
+          startingPositions = [
+            [0, 0],
+            [13, 13],
+          ];
+          break;
+
+        case 'Center':
+          startingPositions = [
+            [6, 6],
+            [7, 7],
+          ];
+          break;
+      }
+
       const payload = {
         width: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
         height: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
@@ -175,22 +174,38 @@ const actions = {
       commit('setBoardSettings', payload);
       commit('setPlayers', [
         new Player(PLAYER_COLORS[0], 'YOU'),
-        new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
+        new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
       ]);
       commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
-        players: [new Player(PLAYER_COLORS[0], 'YOU'), new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 14)],
+        players: [
+          new Player(PLAYER_COLORS[0], 'YOU'),
+          new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
+        ],
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
-      if (startPosition == 'Corner')
-        startingPositions = [
-          [0, 0],
-          [0, 19],
-          [19, 0],
-          [19, 19],
-        ];
+      switch (startPosition) {
+        case 'Corner':
+          startingPositions = [
+            [0, 0],
+            [0, 19],
+            [19, 0],
+            [19, 19],
+          ];
+          break;
+
+        case 'Center':
+          startingPositions = [
+            [9, 9],
+            [9, 10],
+            [10, 9],
+            [10, 10],
+          ];
+          break;
+      }
+
       const payload = {
         width: window.innerWidth > 1180 ? 600 : window.innerWidth < 768 ? 380 : 500,
         height: window.innerWidth > 1180 ? 600 : window.innerWidth < 768 ? 380 : 500,
@@ -200,19 +215,23 @@ const actions = {
       };
       commit('setBoardSettings', payload);
       commit('setPlayers', [
-        new Player(PLAYER_COLORS[0], 'YOU'),
-        new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
-        new AIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
-        new AIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
+        // new Player(PLAYER_COLORS[0], 'YOU'),
+        // new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
+        // new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
+        // new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
+        new MediumRandomAIPlayer(PLAYER_COLORS[0], 'Medium 1', 20),
+        new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 20),
+        new RandomAIPlayer(PLAYER_COLORS[2], 'Random 2', 20),
+        new MediumRandomAIPlayer(PLAYER_COLORS[3], 'Medium 2', 20),
       ]);
       commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
         players: [
           new Player(PLAYER_COLORS[0], 'YOU'),
-          new AIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
-          new AIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
-          new AIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
+          new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
+          new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
+          new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
         ],
       });
     }
@@ -285,7 +304,7 @@ const actions = {
   },
 
   updateGameIsOver({ commit }) {
-    commit("updateGameIsOver", new Evaluation(state.players).checkIfGameIsOver());
+    commit('updateGameIsOver', new Evaluation(state.players).checkIfGameIsOver());
   },
 
   // stateのデータを初期化する
@@ -294,7 +313,7 @@ const actions = {
       return {
         numberOfPlayers: 2,
         timeForEachPlayer: 600, // 600 = 10mins
-        startPosition: "Corner", // ["Center", "Corner", "Anywhere"]
+        startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
         boardSettings: {
           width: Platform.is.desktop ? 490 : 350,
           height: Platform.is.desktop ? 490 : 350,
@@ -316,11 +335,11 @@ const actions = {
         gameIsOver: false, // ゲームが終了したかどうか
       };
     }
-    commit("formatState", getDefaultState());
+    commit('formatState', getDefaultState());
   },
 
   recordRemainingTime({ commit }, { currentPlayerId, remainingTime }) {
-    commit("recordRemainingTime", { currentPlayerId, remainingTime });
+    commit('recordRemainingTime', { currentPlayerId, remainingTime });
   },
 };
 

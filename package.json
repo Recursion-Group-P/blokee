@@ -2,8 +2,8 @@
   "name": "quasar-project",
   "version": "0.0.1",
   "description": "The Best Block Game",
-  "productName": "Blokee",
-  "author": "Taesok Kwon <kwontaesok1997@gmail.com>",
+  "productName": "Blockee",
+  "author": "Recursion Team Dev Group P",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",

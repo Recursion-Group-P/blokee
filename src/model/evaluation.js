@@ -9,16 +9,15 @@ export class Evaluation {
     checkIfGameIsOver() {
         // 1. 全てのplayerが全てのピースを使い切ったか確認
         let allPlayersUsedUpAllPieces = true;
-        for (let i = 0; i < this.players.length; i++) {
-            let remainingPieces = this.players[i].remainingPieces;
-            allPlayersUsedUpAllPieces = this.checkIfUsedUpAllPieces(remainingPieces);
+        for (let player of this.players) {
+            allPlayersUsedUpAllPieces = this.checkIfUsedUpAllPieces(player.remainingPieces);
         }
 
         // 2. 全てのplayerのoutOfGameがtrueになっているか確認
         // outOfGameがtrueのplayerをカウント
         let outOfGameCount = 0;
-        for (let i = 0; i < this.players.length; i++) {
-            if (this.players[i].outOfGame === true) outOfGameCount++;
+        for (const player of this.players) {
+            if (player.outOfGame === true) outOfGameCount++;
         }
 
         return allPlayersUsedUpAllPieces || outOfGameCount === this.players.length;
@@ -27,8 +26,8 @@ export class Evaluation {
     // return: boolean
     checkIfUsedUpAllPieces(remainingPieces) {
         let remainingPiecesCounter = 0;
-        for (let i = 0; i < Object.keys(remainingPieces).length; i++) {
-            if (remainingPieces[i].isUsed === false) remainingPiecesCounter++;
+        for (const remainingPiece of Object.values(remainingPieces)) {
+            if (remainingPiece.isUsed === false) remainingPiecesCounter++;
         }
 
         return remainingPiecesCounter === 0;
@@ -37,17 +36,17 @@ export class Evaluation {
     // return: array
     getFinalResults() {
         let finalResults = [];
-        let players = this.players;
 
-        for (let i = 0; i < players.length; i++) {
-            if (this.checkIfUsedUpAllPieces(players[i].remainingPieces))
-                players[i].score += BONUS_POINTS["usedUpAllPieces"];
+        this.players.forEach((player, index) => {
+            // console.log(player.remainingTime);
+            // if (this.checkIfUsedUpAllPieces(player.remainingPieces))
+                // player.score += BONUS_POINTS["usedUpAllPieces"];
             finalResults.push({
-                playerId: i,
-                score: players[i].score,
-                remainingTime: players[i].remainingTime,
+                playerId: index,
+                score: player.score,
+                remainingTime: player.remainingTime,
             });
-        }
+        })
 
         // scoreの降順にしてから、remainingTimeの降順に並び替える
         let sortedFinalResults = finalResults.sort(function (a, b) {
@@ -72,8 +71,8 @@ export class Evaluation {
         let remainingPieces = this.players[currentPlayerId].remainingPieces;
 
         let remainingPiecesCounter = 0;
-        for (let i = 0; i < Object.keys(remainingPieces).length; i++) {
-            if (remainingPieces[i].isUsed === false) remainingPiecesCounter++;
+        for (const remainingPiece of Object.values(remainingPieces)) {
+            if (remainingPiece.isUsed === false) remainingPiecesCounter++;
         }
         return remainingPiecesCounter === 1 && !remainingPieces[0].isUsed; // remainingPieces[0]は１マスのピース
     }

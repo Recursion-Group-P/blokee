@@ -8,19 +8,35 @@
       <div class="q-gutter-y-md" style="max-width: 400px">
         <q-tab-panels swipeable v-model="tab" animated style="background-color: #f2f4f7">
           <q-tab-panel class="q-pa-none q-px-sm" name="0">
-            <player-area :playerId="0" :class="{ 'ai-player-area': players[0].isAI }" />
+            <player-area
+              :playerId="0"
+              :class="{ 'ai-player-area': players[0].isAI }"
+              @passPlayerTurn="changePlayerTurn"
+            />
           </q-tab-panel>
 
           <q-tab-panel class="q-pa-none q-px-sm" name="1">
-            <player-area :playerId="1" :class="{ 'ai-player-area': players[1].isAI }" />
+            <player-area
+              :playerId="1"
+              :class="{ 'ai-player-area': players[1].isAI }"
+              @passPlayerTurn="changePlayerTurn"
+            />
           </q-tab-panel>
 
           <q-tab-panel class="q-pa-none q-px-sm" name="2" v-if="players.length > 2">
-            <player-area :playerId="2" :class="{ 'ai-player-area': players[2].isAI }" />
+            <player-area
+              :playerId="2"
+              :class="{ 'ai-player-area': players[2].isAI }"
+              @passPlayerTurn="changePlayerTurn"
+            />
           </q-tab-panel>
 
           <q-tab-panel class="q-pa-none q-px-sm" name="3" v-if="players.length > 2">
-            <player-area :playerId="3" :class="{ 'ai-player-area': players[3].isAI }" />
+            <player-area
+              :playerId="3"
+              :class="{ 'ai-player-area': players[3].isAI }"
+              @passPlayerTurn="changePlayerTurn"
+            />
           </q-tab-panel>
         </q-tab-panels>
       </div>
@@ -54,7 +70,6 @@
             :height="boardSettings.height"
           />
         </div>
-        <q-btn class="q-mt-lg" to="/replay">goto replay</q-btn>
       </div>
 
       <div class="col-12 col-sm-3 flex justify-end gt-sm">
@@ -87,9 +102,9 @@ import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
 // Vuex
 import { mapGetters, mapActions } from 'vuex';
 // Vue
-import Vue from "vue";
-import { Platform } from "quasar";
-import { Evaluation } from "src/model/evaluation";
+import Vue from 'vue';
+import { Platform } from 'quasar';
+import { Evaluation } from 'src/model/evaluation';
 // import { BONUS_POINTS } from "src/constants/index";
 
 export default Vue.extend({
@@ -111,8 +126,12 @@ export default Vue.extend({
       canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
       canvas.addEventListener('click', (event) => this.handleMouseClick(event));
     }
-    // player-areaのタイマー開始
-    this.$refs['player-area-' + this.currentPlayerId].startTimer();
+    // // player-areaのタイマー開始
+    // this.$refs['player-area-' + this.currentPlayerId].startTimer();
+
+    if (this.currPlayer.isAI) {
+      this.playAITurn(this.currPlayer);
+    } 
   },
 
   data() {
@@ -126,6 +145,7 @@ export default Vue.extend({
       tab: '0',
       showModal: false,
       roomPageKey: 0,
+      timeoutId: null,
     };
   },
 
@@ -162,14 +182,14 @@ export default Vue.extend({
   },
 
   computed: {
-    ...mapGetters("game", [
-      "timeForEachPlayer",
-      "numberOfPlayers",
-      "boardSettings",
-      "players",
-      "currentPlayerId",
-      "currPiecePoint",
-      "gameIsOver",
+    ...mapGetters('game', [
+      'timeForEachPlayer',
+      'numberOfPlayers',
+      'boardSettings',
+      'players',
+      'currentPlayerId',
+      'currPiecePoint',
+      'gameIsOver',
     ]),
 
     innerWidth() {
@@ -209,13 +229,16 @@ export default Vue.extend({
   },
 
   methods: {
-    ...mapActions("game", [
-      "setCurrentPlayerSelectedPieceId",
-      "updateCurrentPlayerRemainingPieces",
-      "addReplayState",
-      "updateCurrentPlayerId",
-      "updateCurrentPlayerScore",
-      "updateGameIsOver",
+    ...mapActions('game', [
+      'setCurrentPlayerSelectedPieceId',
+      'updateCurrentPlayerRemainingPieces',
+      'addReplayState',
+      'updateCurrentPlayerId',
+      'updateCurrentPlayerScore',
+      'updateCurrentPieceCoordinateAfterRotation',
+      'resetCurrentPlayer',
+      'updateGameIsOver',
+      'updatePlayerOutOfGame',
     ]),
 
     notifyInvalid() {
@@ -227,9 +250,29 @@ export default Vue.extend({
       });
     },
 
+    playAITurn(curr_ai) {
+      setTimeout(() => {
+        // play AI turn and change player
+        let aiCanPlacePiece = false;
+        if (curr_ai.type === 'random') {
+          aiCanPlacePiece = this.playRandomAITurn();
+        } else if (curr_ai.type === 'medium random') {
+          aiCanPlacePiece = this.playMediumRandomAITurn();
+        } else {
+          // greedy ai
+        }
+
+        if (aiCanPlacePiece) {
+          this.changePlayerTurn();
+        } else {
+          this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
+          this.changePlayerTurn();
+        }
+        }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
+      // }, Math.floor(Math.random() * (500 - 300)) + 300);
+    },
+
     changePlayerTurn() {
-      // add replay state
-      // ピースを置かずにターンが変わる場合(パス, 時間切れ)場合は実行しない
       if (this.players[this.currentPlayerId].outOfGame === false) {
         this.addReplayState({
           boardState: this.gameBoard.map((arr) => arr.slice()),
@@ -239,47 +282,29 @@ export default Vue.extend({
         this.updateCurrentPlayerRemainingPieces({
           currentPlayerId: this.currentPlayerId,
         });
-
-        this.setCurrentPlayerSelectedPieceId({
-          currentPlayerId: this.currentPlayerId,
-          selectedPieceId: -1,
-        });
       }
 
+      // reset player selected piece to -1
+      this.setCurrentPlayerSelectedPieceId({
+        currentPlayerId: this.currentPlayerId,
+        selectedPieceId: -1,
+      });
+
+      // if entire game is over -> exit
       this.updateGameIsOver();
+      if (this.gameIsOver) {
+        return;
+      }
 
-      let previousPlayerId = this.currentPlayerId;
-
+      // update playerId
       this.updateCurrentPlayerId();
       this.tab = this.currentPlayerId.toString();
-
-      this.controlTimer(previousPlayerId);
 
       this.drawBoard(this.context);
 
       // if next player is AI
       if (this.players[this.currentPlayerId].isAI) {
-        setTimeout(() => {
-          // play AI turn and change player
-          if (this.playAITurn()) {
-            this.changePlayerTurn();
-          } else {
-            this.$q.notify({
-              type: 'warning',
-              message: 'CPU CANNOT PLACE ANYMORE PIECES!',
-              position: this.notifyPosition,
-            });
-          }
-        }, Math.floor(Math.random() * (3000 - 1000)) + 1000);
-      }
-    },
-
-    controlTimer(previousPlayerId) {
-      // 古いcurrentPlayerIdのTimerを停止
-      this.$refs["player-area-" + previousPlayerId].stopTimer();
-      // 新しいcurrentPlayerIdのTimerを開始
-      if (this.players[this.currentPlayerId].outOfGame === false) {
-        this.$refs["player-area-" + this.currentPlayerId].startTimer();
+        this.playAITurn(this.players[this.currentPlayerId]);
       }
     },
 
@@ -434,6 +459,8 @@ export default Vue.extend({
 
         if (this.isValidMove(currPiece, row, col)) {
           this.placePieceOnBoard(row, col, currPiece);
+          let evaluation = new Evaluation(this.players);
+          let lastOnePieceBonus = evaluation.getLastOnePieceBonus(this.currentPlayerId);
           this.updateCurrentPlayerScore({
             currentPlayerId: this.currentPlayerId,
             currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
@@ -496,16 +523,52 @@ export default Vue.extend({
       this.drawBoard(this.context);
     },
 
-    playAITurn() {
+    playRandomAITurn() {
       const ai = this.players[this.currentPlayerId];
-      const pieceOptions = ai.getPieceOptions();
 
-      for (const pieceId of pieceOptions) {
+      for (const pieceId of ai.getRandomPieces()) {
         this.setCurrentPlayerSelectedPieceId({
           currentPlayerId: this.currentPlayerId,
           selectedPieceId: pieceId,
         });
         const currPiece = ai.remainingPieces[pieceId].pieceCoords;
+
+        for (let i = 0; i < 3; i++) {
+          for (const move of ai.getRandomMoves(this.gameBoard)) {
+            const row = move[0];
+            const col = move[1];
+            if (this.isValidMove(currPiece, row, col)) {
+              this.placePieceOnBoard(row, col, currPiece);
+              this.updateCurrentPlayerScore({
+                currentPlayerId: this.currentPlayerId,
+                currPiecePoint: currPiece.length + 1,
+              });
+              return true;
+            }
+          }
+
+          let rotateDirection = 'cw';
+          this.updateCurrentPieceCoordinateAfterRotation({
+            currentPlayerId: this.currentPlayerId,
+            rotateDirection: rotateDirection,
+            currentPiece: this.currPlayerSelectedPieceId,
+          });
+        }
+      }
+
+      return false;
+    },
+
+    playMediumRandomAITurn() {
+      const ai = this.players[this.currentPlayerId];
+
+      for (const pieceId of ai.getPieces()) {
+        this.setCurrentPlayerSelectedPieceId({
+          currentPlayerId: this.currentPlayerId,
+          selectedPieceId: pieceId,
+        });
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords;
+
         for (let i = 0; i < 3; i++) {
           for (const move of ai.getRandomMoves(this.gameBoard)) {
             const row = move[0];
@@ -575,7 +638,25 @@ export default Vue.extend({
         }
       }
     },
+
+    confirmSave(event) {
+      event.returnValue = 'check';
+    },
   },
+  // created() {
+  //   window.addEventListener('beforeunload', this.confirmSave);
+  // },
+  // destroyed() {
+  //   window.removeEventListener('beforeunload', this.confirmSave);
+  // },
+  // beforeRouteLeave(to, from, next) {
+  //   const answer = window.confirm('進行中のゲームを終了しますか？');
+  //   if (answer) {
+  //     next();
+  //   } else {
+  //     next(false);
+  //   }
+  // },
 });
 </script>
 

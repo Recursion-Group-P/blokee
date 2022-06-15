@@ -1,6 +1,6 @@
 <template>
   <div style="width: 100%">
-    <div class="row justify-around q-mb-sm">
+    <div class="row justify-around q-mb-md">
       <q-btn filled color="blue-grey" round icon="flip" @click="flipPiece" />
       <q-btn
         filled
@@ -19,7 +19,7 @@
       <q-btn filled color="white" text-color="blue-grey" round icon="close" @click="cancelPiece" />
     </div>
     <div
-      class="bg-grey-2 rounded-borders q-pa-sm row justify-center selected-piece-focus"
+      class="bg-grey-2 rounded-borders q-pa-sm row justify-center"
       :style="{ color: players[this.playerId].color }"
     >
       <canvas ref="canvas" width="330" :height="height"></canvas>
@@ -92,16 +92,16 @@ export default Vue.extend({
       );
 
       // Draw other piece
-      for (let i = 0; i < pieceCoordinate.length; i++) {
+      for (const cell of pieceCoordinate) {
         ctx.fillRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          cell[1] * this.cellSize + this.startDrawCoordinate['x'],
+          cell[0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
         ctx.strokeRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          cell[1] * this.cellSize + this.startDrawCoordinate['x'],
+          cell[0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
@@ -150,7 +150,4 @@ export default Vue.extend({
 </script>
 
 <style>
-.selected-piece-focus {
-  box-shadow: inset 0 0 6px 2px;
-}
 </style>

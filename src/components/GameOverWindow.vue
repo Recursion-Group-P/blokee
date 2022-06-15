@@ -90,9 +90,7 @@ export default Vue.extend({
     ]),
 
     finalResults() {
-      let evaluation = new Evaluation(this.players);
-      let finalResults = evaluation.getFinalResults();
-      return finalResults;
+      return new Evaluation(this.players).getFinalResults();
     },
   },
 

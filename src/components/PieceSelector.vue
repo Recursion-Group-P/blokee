@@ -79,16 +79,16 @@ export default {
       );
 
       // Draw other piece
-      for (let i = 0; i < pieceCoordinate.length; i++) {
+      for (const cell of pieceCoordinate) {
         ctx.fillRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          cell[1] * this.cellSize + this.startDrawCoordinate['x'],
+          cell[0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
         ctx.strokeRect(
-          pieceCoordinate[i][1] * this.cellSize + this.startDrawCoordinate['x'],
-          pieceCoordinate[i][0] * this.cellSize + this.startDrawCoordinate['y'],
+          cell[1] * this.cellSize + this.startDrawCoordinate['x'],
+          cell[0] * this.cellSize + this.startDrawCoordinate['y'],
           this.cellSize,
           this.cellSize
         );
