@@ -39,17 +39,19 @@ export class Evaluation {
         let finalResults = [];
 
         this.players.forEach((player, index) => {
-            // console.log(player.remainingTime);
-            // if (this.checkIfUsedUpAllPieces(player.remainingPieces))
-                // this.updateCurrentPlayerScore();
-                // player.score += BONUS_POINTS["usedUpAllPieces"];
+            let usedUpAllPiecesBonus = 0;
+            // usedUpAllPiecesBonus（+15pt）を付与するか判定
+            if (this.checkIfUsedUpAllPieces(player.remainingPieces)) {
+                usedUpAllPiecesBonus = BONUS_POINTS["usedUpAllPieces"];
+            }
             finalResults.push({
                 playerId: index,
                 playerName: player.name,
                 score: player.score,
+                usedUpAllPiecesBonus: usedUpAllPiecesBonus,
                 remainingTime: player.remainingTime,
             });
-        })
+        });
 
         // scoreの降順にしてから、remainingTimeの降順に並び替える
         let sortedFinalResults = finalResults.sort(function (a, b) {
