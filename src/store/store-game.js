@@ -179,9 +179,13 @@ const actions = {
 
       // PC:NPC = 2:0/1:1/0:2
       let gameParticipant = [];
+      let forReplyPlayer = [];
       let k = 0;
       for (let i = 0; i < 2 - numberOfCPU; i++) {
         gameParticipant.push(
+          new Player(PLAYER_COLORS[i], 'Player ' +(i + 1))
+        );
+        forReplyPlayer.push(
           new Player(PLAYER_COLORS[i], 'Player ' +(i + 1))
         );
         k++;
@@ -191,8 +195,14 @@ const actions = {
           gameParticipant.push(
             new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
           );
+          forReplyPlayer.push(
+            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
         } else {
           gameParticipant.push(
+            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
+          forReplyPlayer.push(
             new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
           );
         }
@@ -203,10 +213,7 @@ const actions = {
       commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
-        players: [
-          new Player(PLAYER_COLORS[0], 'YOU'),
-          new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
-        ],
+        players: forReplyPlayer,
       });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
@@ -241,9 +248,13 @@ const actions = {
 
       // PC:NPC = 4:0/3:1/2:2/1:3/0:4
       let gameParticipant = [];
+      let forReplyPlayer = [];
       let k = 0;
       for (let i = 0; i < 4 - numberOfCPU; i++) {
         gameParticipant.push(
+          new Player(PLAYER_COLORS[i], 'Player ' + (i + 1))
+        );
+        forReplyPlayer.push(
           new Player(PLAYER_COLORS[i], 'Player ' + (i + 1))
         );
         k++;
@@ -253,8 +264,14 @@ const actions = {
           gameParticipant.push(
             new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
           );
+          forReplyPlayer.push(
+            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
         } else {
           gameParticipant.push(
+            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
+          forReplyPlayer.push(
             new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
           );
         }
@@ -275,12 +292,7 @@ const actions = {
       commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
-        players: [
-          new Player(PLAYER_COLORS[0], 'YOU'),
-          new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
-          new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
-          new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
-        ],
+        players: forReplyPlayer,
       });
     }
     commit('setGameSettings', {

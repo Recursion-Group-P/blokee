@@ -25,7 +25,7 @@
               {{ index + 1 }}
             </div>
           </div>
-          <div class="col">Player {{ result.playerId + 1 }}</div>
+          <div class="col">{{ result.playerName }}</div>
           <div class="col">{{ result.score }}</div>
           <div class="col">{{ formatTime(result.remainingTime) }}</div>
         </div>
