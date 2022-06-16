@@ -8,13 +8,13 @@
     :style="`background-color: ${playerColor}; width: ${numberOfPlayers === 2 ? '100%' : '80%'}`"
   >
     <div class="row justify-between" style="height: 50px">
-      <h6 class="q-ma-none">
+      <h5 class="q-ma-none">
         <strong>{{ this.players[this.playerId].name }}</strong>
-      </h6>
+      </h5>
       <h6 class="q-ma-none player-score">
         {{ 'Score: ' + this.players[this.playerId].score }}
       </h6>
-      <div class="q-mb-md row" :class="{ 'text-red-8': time <= 10 && time >= 1 }">
+      <div class="q-mb-md row items-center" :class="{ 'text-red-8': time <= 10 && time >= 1 }">
         <q-icon name="timer" size="1.5rem"></q-icon>
         <h6 class="q-ma-none">{{ formatTime }}</h6>
       </div>
@@ -29,7 +29,7 @@
           padding="sm md"
           label="Pass"
           @click="toggleConfirmPassArea"
-          :disabled="confirmPassArea"
+          :disabled="confirmPassArea || currentPlayerId !== playerId"
         />
       </div>
     </div>
@@ -87,11 +87,22 @@ export default Vue.extend({
       selectedPieceId: -1,
       // For Confirm Pass
       confirmPassArea: false,
-      isWatching: true,
+      isWatching: [true, true],
+      outOfGameWatcher: null,
     };
   },
   computed: {
-    ...mapGetters('game', ['players', 'numberOfPlayers', 'timeForEachPlayer', 'currentPlayerId']),
+    ...mapGetters('game', [
+      'players',
+      'numberOfPlayers',
+      'timeForEachPlayer',
+      'currentPlayerId',
+      'gameIsOver',
+    ]),
+
+    thisPlayerOutOfGame() {
+      return this.players[this.playerId].outOfGame;
+    },
 
     currPlayerSelectedPieceId() {
       return this.players[this.playerId].selectedPieceId;
@@ -123,6 +134,7 @@ export default Vue.extend({
       }, 1000);
     },
     stopTimer() {
+      // console.log()
       clearInterval(this.timerObj);
       this.recordRemainingTime({
         currentPlayerId: this.playerId,
@@ -159,15 +171,6 @@ export default Vue.extend({
         else this.stopTimer();
       },
       immediate: true,
-    },
-    players: {
-      handler(players) {
-        if (players[this.playerId].outOfGame === true && this.isWatching) {
-          this.stopTimer();
-          this.isWatching = false;
-        }
-      },
-      deep: true,
     },
   },
 });
