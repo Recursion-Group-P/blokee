@@ -1,4 +1,5 @@
 import { getAllPieces, PIECES } from './piece';
+import { HORIZONTAL_DIRS, DIAG_DIRS } from 'src/constants';
 
 export class Player {
   constructor(color, name, isAI = false) {
@@ -17,19 +18,67 @@ export class AIPlayer extends Player {
   constructor(color, name, totalCells, isAI = true) {
     super(color, name, isAI);
     this.totalCells = totalCells;
+    this.possibleDIRS = [
+      [0, -1],
+      [0, 1],
+      [1, 0],
+      [-1, 0],
+      [-1, -1],
+      [1, -1],
+      [-1, 1],
+      [1, 1],
+      [0, 2],
+      [2, 0],
+      [-2, 0],
+      [0, -2],
+    ];
   }
 
-  getRandomMoves(boardState) {
-    const randomMoves = [];
+  inBounds(row, col) {
+    return col >= 0 && row >= 0 && col < this.totalCells && row < this.totalCells;
+  }
+
+  getCurrentAvailableMoves(playerId, availableMoves, boardState) {
+    const moves = [];
+    const seen = new Set();
     for (let row = 0; row < this.totalCells; row++) {
       for (let col = 0; col < this.totalCells; col++) {
-        if (boardState[row][col] === 0) {
-          randomMoves.push([row, col]);
+        if (availableMoves[row][col] === 1) {
+          moves.push([row, col]);
+          seen.add([row, col].toString());
+          for (const possibleDIR of this.possibleDIRS) {
+            const curr_row = row + possibleDIR[0];
+            const curr_col = col + possibleDIR[1];
+            const curr_str = [curr_row, curr_col].toString();
+            if (
+              !seen.has(curr_str) &&
+              this.inBounds(curr_row, curr_col) &&
+              boardState[curr_row][curr_col] === 0
+            ) {
+              let isValid = true;
+              for (const HORI_DIR of HORIZONTAL_DIRS) {
+                const hori_i = curr_row + HORI_DIR[0];
+                const hori_j = curr_col + HORI_DIR[1];
+                if (this.inBounds(hori_i, hori_j)) {
+                  isValid = boardState[hori_i][hori_j] !== playerId + 1;
+                }
+              }
+              if (isValid) {
+                moves.push([curr_row, curr_col]);
+              }
+              seen.add(curr_str);
+            }
+          }
         }
       }
     }
-    randomMoves.sort(() => Math.random() - 0.5);
-    return randomMoves;
+    return moves;
+  }
+
+  getRandomMoves(playerId, availableMoves, boardState) {
+    return this.getCurrentAvailableMoves(playerId, availableMoves, boardState).sort(
+      () => Math.random() - 0.5
+    );
   }
 
   getPieceOptions() {
@@ -42,6 +91,7 @@ export class AIPlayer extends Player {
   }
 }
 
+// Random
 export class RandomAIPlayer extends AIPlayer {
   constructor(color, name, totalCells, isAI = true) {
     super(color, name, totalCells, isAI);
@@ -54,6 +104,7 @@ export class RandomAIPlayer extends AIPlayer {
   }
 }
 
+// Random with highest point piece
 export class MediumRandomAIPlayer extends AIPlayer {
   constructor(color, name, totalCells, isAI = true) {
     super(color, name, totalCells, isAI);
@@ -65,58 +116,74 @@ export class MediumRandomAIPlayer extends AIPlayer {
   }
 }
 
-// getPossiblePlacementsFromCorner(row, col, seen, moves, boardState) {
-//   const min_row = Math.max(0, row - 2);
-//   const max_row = Math.min(this.totalCells - 1, row + 2);
-//   const min_col = Math.max(0, col - 2);
-//   const max_col = Math.min(this.totalCells - 1, col + 2);
+// Greedy
+export class GreedyAIPlayer extends AIPlayer {
+  constructor(color, name, totalCells, isAI = true) {
+    super(color, name, totalCells, isAI);
+    this.type = 'greedy';
+  }
 
-//   let curr_row = min_row;
-//   let curr_col = min_col;
+  getCornerDifferenceWithOpponent(opponentAvailableMove, pieceCoordsOnBoard) {
+    let cnt = 0;
+    for (const pieceCoord of pieceCoordsOnBoard) {
+      const curr_row = pieceCoord[0];
+      const curr_col = pieceCoord[1];
+      if (opponentAvailableMove[curr_row][curr_col] === 1) {
+        cnt--;
+      }
+    }
 
-//   while (curr_row <= max_row) {
-//     while (curr_col <= max_col) {
-//       const setVal = [curr_row, curr_col].toString();
-//       if (!seen.has(setVal) && boardState[curr_row][curr_col] === 0) {
-//         moves.push([curr_row, curr_col]);
-//         seen.add(setVal);
-//       }
-//       curr_col++;
-//     }
-//     curr_row++;
-//     curr_col = min_col;
-//   }
-// }
+    return cnt;
+  }
 
-// getMovesOptimized(availableMoves, boardState) {
-//   const moves = [];
-//   const seen = new Set();
-//   for (let row = 0; row < this.totalCells; row++) {
-//     for (let col = 0; col < this.totalCells; col++) {
-//       if (availableMoves[row][col] === 1) {
-//         this.getPossiblePlacementsFromCorner(row, col, seen, moves, boardState);
-//       }
-//     }
-//   }
-//   console.log('seen', seen);
-//   console.log('possible moves', moves);
+  getCornerDifference(playerId, currPlayerAvailableMoves, pieceCoordsOnBoard, boardState) {
+    let cnt = 0;
+    for (const pieceCoord of pieceCoordsOnBoard) {
+      const curr_row = pieceCoord[0];
+      const curr_col = pieceCoord[1];
 
-//   let sortedMoves = new Array(moves.length);
-//   const center = this.totalCells / 2;
-//   for (let i = 0; i < moves.length; i++) {
-//     let dist = Math.pow(center - moves[i][0], 2) + Math.pow(center - moves[i][1], 2);
-//     sortedMoves[i] = [dist, [moves[i][0], moves[i][1]]];
-//   }
-//   sortedMoves.sort(this.sortByClosetToCenter);
-//   sortedMoves = sortedMoves.map((move) => move[1]);
-//   console.log('sorted moves: ', sortedMoves);
-//   return sortedMoves;
-// }
+      if (currPlayerAvailableMoves[curr_row][curr_col] === 1) {
+        cnt--;
+      }
 
-// sortByClosetToCenter(a, b) {
-//   if (a[0] === b[0]) {
-//     return 0;
-//   } else {
-//     return a[0] < b[0] ? -1 : 1;
-//   }
-// }
+      for (const HORIZONTAL_DIR of HORIZONTAL_DIRS) {
+        let hori_i = curr_row + HORIZONTAL_DIR[0];
+        let hori_j = curr_col + HORIZONTAL_DIR[1];
+        if (
+          this.inBounds(hori_i, hori_j) &&
+          boardState[hori_i][hori_j] !== playerId + 1 &&
+          currPlayerAvailableMoves[hori_i][hori_j] === 1
+        ) {
+          cnt--;
+        }
+      }
+
+      for (const DIAG_DIR of DIAG_DIRS) {
+        let canPlace = false;
+        let diag_i = curr_row + DIAG_DIR[0];
+        let diag_j = curr_col + DIAG_DIR[1];
+
+        if (this.inBounds(diag_i, diag_j) && boardState[diag_i][diag_j] === 0) {
+          canPlace = true;
+          for (const HORIZONTAL_DIR of HORIZONTAL_DIRS) {
+            let hori_i = diag_i + HORIZONTAL_DIR[0];
+            let hori_j = diag_j + HORIZONTAL_DIR[1];
+            if (this.inBounds(hori_i, hori_j)) {
+              canPlace = canPlace && boardState[hori_i][hori_j] !== playerId + 1;
+            }
+          }
+        }
+
+        if (canPlace) {
+          cnt++;
+        }
+      }
+    }
+
+    return cnt;
+  }
+
+  getPieces() {
+    return this.getPieceOptions().reverse();
+  }
+}

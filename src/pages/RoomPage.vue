@@ -131,7 +131,7 @@ export default Vue.extend({
 
     if (this.currPlayer.isAI) {
       this.playAITurn(this.currPlayer);
-    } 
+    }
   },
 
   data() {
@@ -160,9 +160,10 @@ export default Vue.extend({
             ? 'ボード上でマウスカーソルを動かして選択したピースの配置を決め、クリックで確定します'
             : 'ボード上で指をドラッグして選択したピースの配置を決め、指を放して確定します';
           this.$q.notify({
+            progress: true,
             type: 'info',
             message,
-            timeout: 0,
+            timeout: 15000,
             closeBtn: true,
             position: this.notifyPosition,
           });
@@ -259,7 +260,7 @@ export default Vue.extend({
         } else if (curr_ai.type === 'medium random') {
           aiCanPlacePiece = this.playMediumRandomAITurn();
         } else {
-          // greedy ai
+          aiCanPlacePiece = this.playGreedyAITurn();
         }
 
         if (aiCanPlacePiece) {
@@ -268,7 +269,7 @@ export default Vue.extend({
           this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
           this.changePlayerTurn();
         }
-        }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
+      }, Math.floor(Math.random() * (8000 - 6000)) + 6000);
       // }, Math.floor(Math.random() * (500 - 300)) + 300);
     },
 
@@ -369,6 +370,43 @@ export default Vue.extend({
       return isValid && hasCorner;
     },
 
+    updateCurrentPlayerAvailableMoves(currPlayerAvailableMoves, pieceCoordsOnBoard) {
+      for (const pieceCoord of pieceCoordsOnBoard) {
+        const curr_row = pieceCoord[0];
+        const curr_col = pieceCoord[1];
+
+        if (currPlayerAvailableMoves[curr_row][curr_col] === 1) {
+          currPlayerAvailableMoves[curr_row][curr_col] = 0;
+        }
+
+        for (const HORIZONTAL_DIR of HORIZONTAL_DIRS) {
+          let hori_i = curr_row + HORIZONTAL_DIR[0];
+          let hori_j = curr_col + HORIZONTAL_DIR[1];
+          if (
+            this.inBounds(hori_i, hori_j) &&
+            this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1 &&
+            currPlayerAvailableMoves[hori_i][hori_j] === 1
+          ) {
+            currPlayerAvailableMoves[hori_i][hori_j] = 0;
+          }
+        }
+
+        for (const DIAG_DIR of DIAG_DIRS) {
+          let canPlace = false;
+          let diag_i = curr_row + DIAG_DIR[0];
+          let diag_j = curr_col + DIAG_DIR[1];
+
+          if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
+            canPlace = this.checkHorizontalDirs(diag_i, diag_j);
+          }
+
+          if (canPlace) {
+            currPlayerAvailableMoves[diag_i][diag_j] = 1;
+          }
+        }
+      }
+    },
+
     // ボードにピースを置く
     placePieceOnBoard(row, col, currPiece) {
       this.pieceSound.play();
@@ -376,37 +414,21 @@ export default Vue.extend({
       this.gameBoard[row][col] = this.currentPlayerId + 1;
 
       // place other pieces
+      const pieceCoordsOnBoard = [[row, col]];
       for (let i = 0; i < currPiece.length; i++) {
         let curr_row = row + currPiece[i][0];
         let curr_col = col + currPiece[i][1];
         this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
+        pieceCoordsOnBoard.push([curr_row, curr_col]);
       }
 
-      // reinitialize availablePlayerMoves for current player
-      this.availablePlayerMoves[this.currentPlayerId] = new Array(this.boardSettings.totalCells)
-        .fill(0)
-        .map(() => new Array(this.boardSettings.totalCells).fill(0));
-      // recompute availablePlayerMoves for current player
-      for (let i = 0; i < this.boardSettings.totalCells; i++) {
-        for (let j = 0; j < this.boardSettings.totalCells; j++) {
-          if (this.gameBoard[i][j] === this.currentPlayerId + 1) {
-            // check all corners for each piece
-            for (const DIAG_DIR of DIAG_DIRS) {
-              let canPlace = false;
-              let diag_i = i + DIAG_DIR[0];
-              let diag_j = j + DIAG_DIR[1];
-
-              if (this.inBounds(diag_i, diag_j) && this.gameBoard[diag_i][diag_j] === 0) {
-                canPlace = this.checkHorizontalDirs(diag_i, diag_j);
-              }
-
-              if (canPlace) {
-                this.availablePlayerMoves[this.currentPlayerId][diag_i][diag_j] = 1;
-              }
-            }
-          }
-        }
-      }
+      // update current player available moves
+      const currPlayerAvailableMoves = this.availablePlayerMoves[this.currentPlayerId];
+      this.updateCurrentPlayerAvailableMoves(
+        currPlayerAvailableMoves,
+        pieceCoordsOnBoard,
+        this.gameBoard
+      );
     },
 
     // ボードにピースを描画する
@@ -525,19 +547,25 @@ export default Vue.extend({
 
     playRandomAITurn() {
       const ai = this.players[this.currentPlayerId];
+      const currPlayerAvailableMoves = this.availablePlayerMoves[this.currentPlayerId];
+      const possibleMoves = ai.getRandomMoves(
+        this.currentPlayerId,
+        currPlayerAvailableMoves,
+        this.gameBoard
+      );
 
       for (const pieceId of ai.getRandomPieces()) {
-        this.setCurrentPlayerSelectedPieceId({
-          currentPlayerId: this.currentPlayerId,
-          selectedPieceId: pieceId,
-        });
-        const currPiece = ai.remainingPieces[pieceId].pieceCoords;
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) => arr.slice());
 
-        for (let i = 0; i < 3; i++) {
-          for (const move of ai.getRandomMoves(this.gameBoard)) {
+        for (let i = 0; i < 4; i++) {
+          for (const move of possibleMoves) {
             const row = move[0];
             const col = move[1];
             if (this.isValidMove(currPiece, row, col)) {
+              this.setCurrentPlayerSelectedPieceId({
+                currentPlayerId: this.currentPlayerId,
+                selectedPieceId: pieceId,
+              });
               this.placePieceOnBoard(row, col, currPiece);
               this.updateCurrentPlayerScore({
                 currentPlayerId: this.currentPlayerId,
@@ -547,12 +575,13 @@ export default Vue.extend({
             }
           }
 
-          let rotateDirection = 'cw';
-          this.updateCurrentPieceCoordinateAfterRotation({
-            currentPlayerId: this.currentPlayerId,
-            rotateDirection: rotateDirection,
-            currentPiece: this.currPlayerSelectedPieceId,
-          });
+          // rotate
+          for (let j = 0; j < currPiece.length; j++) {
+            currPiece[j].splice(0, 1, -currPiece[j][0]);
+            let temp = currPiece[j][0];
+            currPiece[j].splice(0, 1, currPiece[j][1]);
+            currPiece[j].splice(1, 1, temp);
+          }
         }
       }
 
@@ -561,19 +590,25 @@ export default Vue.extend({
 
     playMediumRandomAITurn() {
       const ai = this.players[this.currentPlayerId];
+      const currPlayerAvailableMoves = this.availablePlayerMoves[this.currentPlayerId];
+      const possibleMoves = ai.getRandomMoves(
+        this.currentPlayerId,
+        currPlayerAvailableMoves,
+        this.gameBoard
+      );
 
       for (const pieceId of ai.getPieces()) {
-        this.setCurrentPlayerSelectedPieceId({
-          currentPlayerId: this.currentPlayerId,
-          selectedPieceId: pieceId,
-        });
-        const currPiece = ai.remainingPieces[pieceId].pieceCoords;
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) => arr.slice());
 
-        for (let i = 0; i < 3; i++) {
-          for (const move of ai.getRandomMoves(this.gameBoard)) {
+        for (let i = 0; i < 4; i++) {
+          for (const move of possibleMoves) {
             const row = move[0];
             const col = move[1];
             if (this.isValidMove(currPiece, row, col)) {
+              this.setCurrentPlayerSelectedPieceId({
+                currentPlayerId: this.currentPlayerId,
+                selectedPieceId: pieceId,
+              });
               this.placePieceOnBoard(row, col, currPiece);
               this.updateCurrentPlayerScore({
                 currentPlayerId: this.currentPlayerId,
@@ -583,16 +618,117 @@ export default Vue.extend({
             }
           }
 
-          let rotateDirection = 'cw';
-          this.updateCurrentPieceCoordinateAfterRotation({
-            currentPlayerId: this.currentPlayerId,
-            rotateDirection: rotateDirection,
-            currentPiece: this.currPlayerSelectedPieceId,
-          });
+          // rotate
+          for (let j = 0; j < currPiece.length; j++) {
+            currPiece[j].splice(0, 1, -currPiece[j][0]);
+            let temp = currPiece[j][0];
+            currPiece[j].splice(0, 1, currPiece[j][1]);
+            currPiece[j].splice(1, 1, temp);
+          }
         }
       }
 
       return false;
+    },
+
+    playGreedyAITurn() {
+      const ai = this.players[this.currentPlayerId];
+      const currPlayerAvailableMoves = this.availablePlayerMoves[this.currentPlayerId];
+      const possibleMoves = ai.getCurrentAvailableMoves(
+        this.currentPlayerId,
+        currPlayerAvailableMoves,
+        this.gameBoard
+      );
+
+      console.log(possibleMoves);
+
+      const opponentAvailableMoves = this.availablePlayerMoves.filter((arr, idx) => {
+        if (idx !== this.currentPlayerId) {
+          return arr.slice();
+        }
+      });
+
+      const weightedPlacements = [[0, null]]; // [[weight, [row, col, pieceId, currPiece]], ...]
+      for (const pieceId of ai.getPieces()) {
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) => arr.slice());
+
+        for (const move of possibleMoves) {
+          const row = move[0];
+          const col = move[1];
+
+          for (let rots = 0; rots < 4; rots++) {
+            if (this.isValidMove(currPiece, row, col)) {
+              // increase own corners and reduce opponent corners
+              let currBoardState = this.gameBoard.map((arr) => arr.slice());
+              const pieceCoordsOnBoard = [[row, col]];
+              currBoardState[row][col] = this.currentPlayerId + 1;
+              for (let i = 0; i < currPiece.length; i++) {
+                let curr_row = row + currPiece[i][0];
+                let curr_col = col + currPiece[i][1];
+                currBoardState[curr_row][curr_col] = this.currentPlayerId + 1;
+                pieceCoordsOnBoard.push([curr_row, curr_col]);
+              }
+
+              const currPlayerCornerDiff = ai.getCornerDifference(
+                this.currentPlayerId,
+                currPlayerAvailableMoves,
+                pieceCoordsOnBoard,
+                currBoardState
+              );
+
+              let opponentCornerDiff = 0;
+              for (const opponentAvailableMove of opponentAvailableMoves) {
+                opponentCornerDiff += ai.getCornerDifferenceWithOpponent(
+                  opponentAvailableMove,
+                  pieceCoordsOnBoard
+                );
+              }
+
+              // console.log(
+              //   `my corner diff: ${currPlayerCornerDiff}, opponents corner diff: ${opponentCornerDiff}`
+              // );
+
+              // const weight =
+              //   0.5 * currPlayerCornerDiff - 0.6 * opponentCornerDiff + 1 * (currPiece.length + 1);
+              const weight =
+                1 * (currPiece.length + 1) +
+                ((currPlayerCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) * 0.6;
+
+              weightedPlacements.push([
+                weight,
+                { row, col, pieceId, currPiece: currPiece.map((arr) => arr.slice()) },
+              ]);
+            }
+
+            // rotate
+            for (let j = 0; j < currPiece.length; j++) {
+              currPiece[j].splice(0, 1, -currPiece[j][0]);
+              let temp = currPiece[j][0];
+              currPiece[j].splice(0, 1, currPiece[j][1]);
+              currPiece[j].splice(1, 1, temp);
+            }
+          }
+        }
+      }
+      const selectedPiece = weightedPlacements.sort((a, b) => b[0] - a[0])[0][1]; // row, col, pieceId, rots
+      console.log('weighted placements: ', weightedPlacements);
+
+      if (selectedPiece) {
+        console.log(selectedPiece);
+        this.setCurrentPlayerSelectedPieceId({
+          currentPlayerId: this.currentPlayerId,
+          selectedPieceId: selectedPiece.pieceId,
+        });
+        this.placePieceOnBoard(selectedPiece.row, selectedPiece.col, selectedPiece.currPiece);
+        this.updateCurrentPlayerScore({
+          currentPlayerId: this.currentPlayerId,
+          currPiecePoint: selectedPiece.currPiece.length + 1,
+        });
+        return true;
+      } else {
+        console.log('cannot place piece!');
+        return false;
+      }
     },
 
     drawBoard(context) {
@@ -612,7 +748,8 @@ export default Vue.extend({
               this.boardSettings.cellWidth
             );
           } else if (this.availablePlayerMoves[this.currentPlayerId][i][j] === 1) {
-            context.fillStyle = '#a7adb5';
+            // context.fillStyle = '#a7adb5';
+            context.fillStyle = this.currPlayer.color + '90';
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,

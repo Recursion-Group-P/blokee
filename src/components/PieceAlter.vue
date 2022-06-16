@@ -1,22 +1,22 @@
 <template>
   <div style="width: 100%">
     <div class="row justify-around q-mb-md">
-      <q-btn filled color="blue-grey" round icon="flip" @click="flipPiece" />
+      <q-btn filled color="black" round icon="flip" @click="flipPiece" />
       <q-btn
         filled
-        color="blue-grey"
+        color="black"
         round
         icon="fa-solid fa-rotate-left"
         @click="turnPiece90DegreeCounterClockwise"
       />
       <q-btn
         filled
-        color="blue-grey"
+        color="black"
         round
         icon="fa-solid fa-rotate-right"
         @click="turnPiece90DegreeClockwise"
       />
-      <q-btn filled color="white" text-color="blue-grey" round icon="close" @click="cancelPiece" />
+      <q-btn filled color="white" text-color="black" round icon="close" @click="cancelPiece" />
     </div>
     <div
       class="bg-grey-2 rounded-borders q-pa-sm row justify-center"

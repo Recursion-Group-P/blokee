@@ -1,4 +1,4 @@
-import { Player, RandomAIPlayer, MediumRandomAIPlayer } from 'src/model/player';
+import { Player, RandomAIPlayer, MediumRandomAIPlayer, GreedyAIPlayer } from 'src/model/player';
 import { PLAYER_COLORS } from 'src/constants';
 import { Platform } from 'quasar';
 import { Evaluation } from 'src/model/evaluation';
@@ -23,7 +23,9 @@ const state = {
   currentPlayerId: 0,
   currPiecePoint: 0,
   // players: [new Player(PLAYER_COLORS[0], 'YOU'), new Player(PLAYER_COLORS[1], 'Other')], // local
-  players: [new Player(PLAYER_COLORS[0], 'YOU'), new MediumRandomAIPlayer(PLAYER_COLORS[1], 'Medium 1', 14)],
+  // players: [new Player(PLAYER_COLORS[0], 'YOU'), new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 14)],
+  // players: [new Player(PLAYER_COLORS[0], 'YOU'), new MediumRandomAIPlayer(PLAYER_COLORS[1], 'Medium 1', 14)],
+  players: [new Player(PLAYER_COLORS[0], 'YOU'), new GreedyAIPlayer(PLAYER_COLORS[1], 'GREEDY', 14)],
   // players: [
   //   new MediumRandomAIPlayer(PLAYER_COLORS[0], 'CPU 1', 14),
   //   new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 2', 14),
@@ -174,14 +176,14 @@ const actions = {
       commit('setBoardSettings', payload);
       commit('setPlayers', [
         new Player(PLAYER_COLORS[0], 'YOU'),
-        new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
+        new GreedyAIPlayer(PLAYER_COLORS[1], 'GREEDY', 14),
       ]);
       commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
         players: [
           new Player(PLAYER_COLORS[0], 'YOU'),
-          new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
+          new GreedyAIPlayer(PLAYER_COLORS[1], 'GREEDY', 14),
         ],
       });
     } else if (numberOfPlayers == 4) {
@@ -219,10 +221,10 @@ const actions = {
         // new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
         // new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
         // new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
-        new MediumRandomAIPlayer(PLAYER_COLORS[0], 'Medium 1', 20),
-        new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 20),
-        new RandomAIPlayer(PLAYER_COLORS[2], 'Random 2', 20),
-        new MediumRandomAIPlayer(PLAYER_COLORS[3], 'Medium 2', 20),
+        new Player(PLAYER_COLORS[0], 'YOU'),
+        new RandomAIPlayer(PLAYER_COLORS[1], 'RANDOM', 20),
+        new MediumRandomAIPlayer(PLAYER_COLORS[2], 'MEDIUM', 20),
+        new GreedyAIPlayer(PLAYER_COLORS[3], 'GREEDY', 20),
       ]);
       commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
