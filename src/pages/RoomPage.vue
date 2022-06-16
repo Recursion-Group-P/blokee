@@ -269,8 +269,8 @@ export default Vue.extend({
           this.changePlayerTurn();
           this.$refs[`player-area-${this.currentPlayerId}`].stopTimer();
         }
-        // }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
-      }, Math.floor(Math.random() * (500 - 300)) + 300);
+      }, Math.floor(Math.random() * (4000 - 2000)) + 2000);
+      // }, Math.floor(Math.random() * (500 - 300)) + 300);
     },
 
     changePlayerTurn() {
@@ -803,7 +803,6 @@ export default Vue.extend({
     window.removeEventListener('beforeunload', this.confirmSave);
   },
   beforeRouteLeave(to, from, next) {
-    this.formatState();
     if (!this.gameIsOver) {
       const answer = window.confirm('進行中のゲームを終了しますか？');
       if (answer) {
@@ -811,9 +810,8 @@ export default Vue.extend({
       } else {
         next(false);
       }
-    } else {
-      next();
-    }
+    } else next();
+    this.formatState();
   },
 });
 </script>
