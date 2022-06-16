@@ -87,11 +87,22 @@ export default Vue.extend({
       selectedPieceId: -1,
       // For Confirm Pass
       confirmPassArea: false,
-      isWatching: true,
+      isWatching: [true, true],
+      outOfGameWatcher: null,
     };
   },
   computed: {
-    ...mapGetters('game', ['players', 'numberOfPlayers', 'timeForEachPlayer', 'currentPlayerId']),
+    ...mapGetters('game', [
+      'players',
+      'numberOfPlayers',
+      'timeForEachPlayer',
+      'currentPlayerId',
+      'gameIsOver',
+    ]),
+
+    thisPlayerOutOfGame() {
+      return this.players[this.playerId].outOfGame;
+    },
 
     currPlayerSelectedPieceId() {
       return this.players[this.playerId].selectedPieceId;
@@ -123,6 +134,7 @@ export default Vue.extend({
       }, 1000);
     },
     stopTimer() {
+      // console.log()
       clearInterval(this.timerObj);
       this.recordRemainingTime({
         currentPlayerId: this.playerId,
@@ -159,15 +171,6 @@ export default Vue.extend({
         else this.stopTimer();
       },
       immediate: true,
-    },
-    players: {
-      handler(players) {
-        if (players[this.playerId].outOfGame === true && this.isWatching) {
-          this.stopTimer();
-          this.isWatching = false;
-        }
-      },
-      deep: true,
     },
   },
 });

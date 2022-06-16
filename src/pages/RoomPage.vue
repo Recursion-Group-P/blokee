@@ -268,8 +268,9 @@ export default Vue.extend({
         } else {
           this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
           this.changePlayerTurn();
+          this.$refs[`player-area-${this.currentPlayerId}`].stopTimer();
         }
-      }, Math.floor(Math.random() * (6000 - 4000)) + 4000);
+      }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
       // }, Math.floor(Math.random() * (500 - 300)) + 300);
     },
 
@@ -293,13 +294,15 @@ export default Vue.extend({
 
       // if entire game is over -> exit
       this.updateGameIsOver();
-      if (this.gameIsOver) {
-        return;
-      }
 
       // update playerId
       this.updateCurrentPlayerId();
       this.tab = this.currentPlayerId.toString();
+
+      if (this.gameIsOver) {
+        return;
+      }
+
 
       this.drawBoard(this.context);
 
@@ -640,7 +643,7 @@ export default Vue.extend({
         this.gameBoard
       );
 
-      console.log(possibleMoves);
+      // console.log(possibleMoves);
 
       const opponentAvailableMoves = this.availablePlayerMoves.filter((arr, idx) => {
         if (idx !== this.currentPlayerId) {
@@ -718,10 +721,10 @@ export default Vue.extend({
         }
       }
       const selectedPiece = weightedPlacements.sort((a, b) => b[0] - a[0])[0][1]; // row, col, pieceId, rots
-      console.log('weighted placements: ', weightedPlacements);
+      // console.log('weighted placements: ', weightedPlacements);
 
       if (selectedPiece) {
-        console.log(selectedPiece);
+        // console.log(selectedPiece);
         this.setCurrentPlayerSelectedPieceId({
           currentPlayerId: this.currentPlayerId,
           selectedPieceId: selectedPiece.pieceId,
@@ -733,7 +736,7 @@ export default Vue.extend({
         });
         return true;
       } else {
-        console.log('cannot place piece!');
+        // console.log('cannot place piece!');
         return false;
       }
     },
