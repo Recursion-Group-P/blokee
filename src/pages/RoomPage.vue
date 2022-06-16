@@ -95,36 +95,36 @@
 
 <script>
 // Components
-import PlayerArea from 'src/components/PlayerArea.vue';
-import GameOverWindow from 'src/components/GameOverWindow.vue';
+import PlayerArea from "src/components/PlayerArea.vue";
+import GameOverWindow from "src/components/GameOverWindow.vue";
 // Constants
-import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from 'src/constants';
+import { HORIZONTAL_DIRS, DIAG_DIRS, PLAYER_COLORS } from "src/constants";
 // Vuex
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions } from "vuex";
 // Vue
-import Vue from 'vue';
-import { Platform } from 'quasar';
-import { Evaluation } from 'src/model/evaluation';
+import Vue from "vue";
+import { Platform } from "quasar";
+import { Evaluation } from "src/model/evaluation";
 // import { BONUS_POINTS } from "src/constants/index";
 
 export default Vue.extend({
   components: {
-    'player-area': PlayerArea,
-    'game-over-window': GameOverWindow,
+    "player-area": PlayerArea,
+    "game-over-window": GameOverWindow,
   },
 
   mounted() {
     const canvas = this.$refs.canvasRef;
-    const context = this.$refs.canvasRef.getContext('2d');
+    const context = this.$refs.canvasRef.getContext("2d");
     if (context !== null) {
       this.context = context;
       this.canvas = canvas;
       this.drawBoard(context);
 
-      canvas.addEventListener('touchmove', (event) => this.handleTouchMove(event));
-      canvas.addEventListener('touchend', (event) => this.handleTouchEnd(event));
-      canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
-      canvas.addEventListener('click', (event) => this.handleMouseClick(event));
+      canvas.addEventListener("touchmove", (event) => this.handleTouchMove(event));
+      canvas.addEventListener("touchend", (event) => this.handleTouchEnd(event));
+      canvas.addEventListener("mousemove", (event) => this.handleMouseMove(event));
+      canvas.addEventListener("click", (event) => this.handleMouseClick(event));
     }
 
     if (this.currPlayer.isAI) {
@@ -134,13 +134,13 @@ export default Vue.extend({
 
   data() {
     return {
-      notifyPosition: Platform.is.desktop ? 'bottom' : 'top',
-      pieceSound: new Audio(require('../assets/sounds/piece.mp3')),
+      notifyPosition: Platform.is.desktop ? "bottom" : "top",
+      pieceSound: new Audio(require("../assets/sounds/piece.mp3")),
       showTip: true,
       isDragging: false,
       context: null,
       canvas: null,
-      tab: '0',
+      tab: "0",
       showModal: false,
       roomPageKey: 0,
       timeoutId: null,
@@ -155,11 +155,11 @@ export default Vue.extend({
       } else {
         if (this.showTip) {
           const message = Platform.is.desktop
-            ? 'ボード上でマウスカーソルを動かして選択したピースの配置を決め、クリックで確定します'
-            : 'ボード上で指をドラッグして選択したピースの配置を決め、指を放して確定します';
+            ? "ボード上でマウスカーソルを動かして選択したピースの配置を決め、クリックで確定します"
+            : "ボード上で指をドラッグして選択したピースの配置を決め、指を放して確定します";
           this.$q.notify({
             progress: true,
-            type: 'info',
+            type: "info",
             message,
             timeout: 15000,
             closeBtn: true,
@@ -181,14 +181,14 @@ export default Vue.extend({
   },
 
   computed: {
-    ...mapGetters('game', [
-      'timeForEachPlayer',
-      'numberOfPlayers',
-      'boardSettings',
-      'players',
-      'currentPlayerId',
-      'currPiecePoint',
-      'gameIsOver',
+    ...mapGetters("game", [
+      "timeForEachPlayer",
+      "numberOfPlayers",
+      "boardSettings",
+      "players",
+      "currentPlayerId",
+      "currPiecePoint",
+      "gameIsOver",
     ]),
 
     innerWidth() {
@@ -228,23 +228,23 @@ export default Vue.extend({
   },
 
   methods: {
-    ...mapActions('game', [
-      'setCurrentPlayerSelectedPieceId',
-      'updateCurrentPlayerRemainingPieces',
-      'addReplayState',
-      'updateCurrentPlayerId',
-      'updateCurrentPlayerScore',
-      'updateCurrentPieceCoordinateAfterRotation',
-      'resetCurrentPlayer',
-      'updateGameIsOver',
-      'updatePlayerOutOfGame',
-      'formatState',
+    ...mapActions("game", [
+      "setCurrentPlayerSelectedPieceId",
+      "updateCurrentPlayerRemainingPieces",
+      "addReplayState",
+      "updateCurrentPlayerId",
+      "updateCurrentPlayerScore",
+      "updateCurrentPieceCoordinateAfterRotation",
+      "resetCurrentPlayer",
+      "updateGameIsOver",
+      "updatePlayerOutOfGame",
+      "formatState",
     ]),
 
     notifyInvalid() {
       this.$q.notify({
-        type: 'warning',
-        message: '現在のマス目にブロックを置けません！',
+        type: "warning",
+        message: "現在のマス目にブロックを置けません！",
         timeout: 1000,
         position: this.notifyPosition,
       });
@@ -254,9 +254,9 @@ export default Vue.extend({
       setTimeout(() => {
         // play AI turn and change player
         let aiCanPlacePiece = false;
-        if (curr_ai.type === 'random') {
+        if (curr_ai.type === "random") {
           aiCanPlacePiece = this.playRandomAITurn();
-        } else if (curr_ai.type === 'medium random') {
+        } else if (curr_ai.type === "medium random") {
           aiCanPlacePiece = this.playMediumRandomAITurn();
         } else {
           aiCanPlacePiece = this.playGreedyAITurn();
@@ -283,6 +283,16 @@ export default Vue.extend({
         this.updateCurrentPlayerRemainingPieces({
           currentPlayerId: this.currentPlayerId,
         });
+
+        // 全てのピースのisUsedがtrueになったらoutOfGameをtrueに更新
+        let evaluation = new Evaluation(this.players);
+        let ifUsedUpAllPieces = evaluation.checkIfUsedUpAllPieces(
+          this.players[this.currentPlayerId].remainingPieces
+        );
+        if (ifUsedUpAllPieces) {
+          this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
+          this.$refs[`player-area-${this.currentPlayerId}`].stopTimer();
+        }
       }
 
       // reset player selected piece to -1
@@ -334,7 +344,8 @@ export default Vue.extend({
         let hori_i = row + HORIZONTAL_DIR[0];
         let hori_j = col + HORIZONTAL_DIR[1];
         if (this.inBounds(hori_i, hori_j)) {
-          isValid = isValid && this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1;
+          isValid =
+            isValid && this.gameBoard[hori_i][hori_j] !== this.currentPlayerId + 1;
         }
       }
       return isValid;
@@ -444,7 +455,7 @@ export default Vue.extend({
     drawPieceOnBoard(row, col, currPiece) {
       const cellWidth = this.boardSettings.cellWidth;
 
-      this.context.strokeStyle = 'white';
+      this.context.strokeStyle = "white";
       this.context.lineWidth = 2;
 
       this.context.fillStyle = PLAYER_COLORS[this.currentPlayerId];
@@ -474,7 +485,8 @@ export default Vue.extend({
     handleMouseMove(event) {
       if (this.isDragging) {
         let [row, col] = this.getRowColMouse(event);
-        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+          .pieceCoords;
         this.drawBoard(this.context);
 
         if (this.inBounds(row, col)) {
@@ -486,7 +498,8 @@ export default Vue.extend({
     handleMouseClick(event) {
       if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
         let [row, col] = this.getRowColMouse(event);
-        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+          .pieceCoords;
 
         if (this.isValidMove(currPiece, row, col)) {
           this.placePieceOnBoard(row, col, currPiece);
@@ -515,7 +528,8 @@ export default Vue.extend({
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
-        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+          .pieceCoords;
 
         this.drawBoard(this.context);
 
@@ -536,7 +550,8 @@ export default Vue.extend({
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
 
-        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId].pieceCoords;
+        let currPiece = this.currPlayer.remainingPieces[this.currPlayerSelectedPieceId]
+          .pieceCoords;
 
         if (this.isValidMove(currPiece, row, col)) {
           // place center piece
@@ -564,7 +579,9 @@ export default Vue.extend({
       );
 
       for (const pieceId of ai.getRandomPieces()) {
-        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) => arr.slice());
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) =>
+          arr.slice()
+        );
 
         for (let i = 0; i < 4; i++) {
           for (const move of possibleMoves) {
@@ -607,7 +624,9 @@ export default Vue.extend({
       );
 
       for (const pieceId of ai.getPieces()) {
-        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) => arr.slice());
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) =>
+          arr.slice()
+        );
 
         for (let i = 0; i < 4; i++) {
           for (const move of possibleMoves) {
@@ -659,7 +678,9 @@ export default Vue.extend({
 
       const weightedPlacements = [[0, null]]; // [[weight, [row, col, pieceId, currPiece]], ...]
       for (const pieceId of ai.getPieces()) {
-        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) => arr.slice());
+        const currPiece = ai.remainingPieces[pieceId].pieceCoords.map((arr) =>
+          arr.slice()
+        );
 
         for (const move of possibleMoves) {
           const row = move[0];
@@ -701,7 +722,8 @@ export default Vue.extend({
               //   0.5 * currPlayerCornerDiff - 0.6 * opponentCornerDiff + 1 * (currPiece.length + 1);
               const weight =
                 1 * (currPiece.length + 1) +
-                ((myCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) * 0.6;
+                ((myCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) *
+                  0.6;
 
               weightedPlacements.push([
                 weight,
@@ -735,7 +757,11 @@ export default Vue.extend({
           currentPlayerId: this.currentPlayerId,
           selectedPieceId: selectedPiece.pieceId,
         });
-        this.placePieceOnBoard(selectedPiece.row, selectedPiece.col, selectedPiece.currPiece);
+        this.placePieceOnBoard(
+          selectedPiece.row,
+          selectedPiece.col,
+          selectedPiece.currPiece
+        );
         // this.updateCurrentPlayerScore({
         //   currentPlayerId: this.currentPlayerId,
         //   currPiecePoint: selectedPiece.currPiece.length + 1,
@@ -750,7 +776,7 @@ export default Vue.extend({
     drawBoard(context) {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-      context.strokeStyle = 'white';
+      context.strokeStyle = "white";
       context.lineWidth = 2;
 
       for (let i = 0; i < this.boardSettings.totalCells; i++) {
@@ -765,7 +791,7 @@ export default Vue.extend({
             );
           } else if (this.availablePlayerMoves[this.currentPlayerId][i][j] === 1) {
             // context.fillStyle = '#a7adb5';
-            context.fillStyle = this.currPlayer.color + '90';
+            context.fillStyle = this.currPlayer.color + "90";
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
@@ -773,7 +799,7 @@ export default Vue.extend({
               this.boardSettings.cellWidth
             );
           } else {
-            context.fillStyle = '#CDD5DF';
+            context.fillStyle = "#CDD5DF";
             context.fillRect(
               j * this.boardSettings.cellWidth,
               i * this.boardSettings.cellWidth,
@@ -793,18 +819,18 @@ export default Vue.extend({
     },
 
     confirmSave(event) {
-      event.returnValue = 'check';
+      event.returnValue = "check";
     },
   },
   created() {
-    window.addEventListener('beforeunload', this.confirmSave);
+    window.addEventListener("beforeunload", this.confirmSave);
   },
   destroyed() {
-    window.removeEventListener('beforeunload', this.confirmSave);
+    window.removeEventListener("beforeunload", this.confirmSave);
   },
   beforeRouteLeave(to, from, next) {
     if (!this.gameIsOver) {
-      const answer = window.confirm('進行中のゲームを終了しますか？');
+      const answer = window.confirm("進行中のゲームを終了しますか？");
       if (answer) {
         next();
       } else {
