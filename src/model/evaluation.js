@@ -1,4 +1,5 @@
 import { BONUS_POINTS } from "src/constants";
+// import { mapActions } from "vuex";
 
 export class Evaluation {
     constructor(players) {
@@ -40,6 +41,7 @@ export class Evaluation {
         this.players.forEach((player, index) => {
             // console.log(player.remainingTime);
             // if (this.checkIfUsedUpAllPieces(player.remainingPieces))
+                // this.updateCurrentPlayerScore();
                 // player.score += BONUS_POINTS["usedUpAllPieces"];
             finalResults.push({
                 playerId: index,

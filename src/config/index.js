@@ -7,7 +7,7 @@ export const Config = {
       "4":[0, 1, 2, 3, 4],
     },
     CPUStrength:["easy", "easy", "easy", "easy"],
-    CPUStrengthOptions:["easy", "medium"],
+    CPUStrengthOptions:["easy", "medium", "hard"],
     timeForEachPlayer: { label: "10 min", value: 600 },
     timeForEachPlayerOptions: [
         { label: "5 min", value: 300 },
