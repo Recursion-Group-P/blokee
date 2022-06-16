@@ -5,6 +5,8 @@ import { Evaluation } from 'src/model/evaluation';
 
 const state = {
   numberOfPlayers: 2,
+  numberOfCPU: 0,
+  CPUStrength: [],
   timeForEachPlayer: 600, // 600 = 10mins
   startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
   boardSettings: {
@@ -43,6 +45,8 @@ const mutations = {
   setGameSettings(state, payload) {
     state.numberOfPlayers = payload.numberOfPlayers;
     state.timeForEachPlayer = payload.timeForEachPlayer;
+    state.numberOfCPU = payload.numberOfCPU;
+    state.CPUStrength = payload.CPUStrength;
   },
 
   setBoardSettings(state, payload) {
@@ -145,7 +149,7 @@ const mutations = {
 };
 
 const actions = {
-  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition }) {
+  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition, numberOfCPU, CPUStrength }) {
     if (numberOfPlayers == 2) {
       let startingPositions = null;
       switch (startPosition) {
@@ -172,10 +176,29 @@ const actions = {
         startingPositions,
       };
       commit('setBoardSettings', payload);
-      commit('setPlayers', [
-        new Player(PLAYER_COLORS[0], 'YOU'),
-        new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
-      ]);
+
+      // PC:NPC = 2:0/1:1/0:2
+      let gameParticipant = [];
+      let k = 0;
+      for (let i = 0; i < 2 - numberOfCPU; i++) {
+        gameParticipant.push(
+          new Player(PLAYER_COLORS[i], 'Player ' +(i + 1))
+        );
+        k++;
+      }
+      for (let j = 0; j < numberOfCPU; j++) {
+        if (CPUStrength[j] === "medium") {
+          gameParticipant.push(
+            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
+        } else {
+          gameParticipant.push(
+            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
+        }
+      }
+      commit('setPlayers', gameParticipant);
+
       commit('setReplayState', {
         boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
         usedPiece: [],
@@ -214,16 +237,40 @@ const actions = {
         startingPositions,
       };
       commit('setBoardSettings', payload);
-      commit('setPlayers', [
-        // new Player(PLAYER_COLORS[0], 'YOU'),
-        // new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
-        // new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
-        // new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
-        new MediumRandomAIPlayer(PLAYER_COLORS[0], 'Medium 1', 20),
-        new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 20),
-        new RandomAIPlayer(PLAYER_COLORS[2], 'Random 2', 20),
-        new MediumRandomAIPlayer(PLAYER_COLORS[3], 'Medium 2', 20),
-      ]);
+
+      // PC:NPC = 4:0/3:1/2:2/1:3/0:4
+      let gameParticipant = [];
+      let k = 0;
+      for (let i = 0; i < 4 - numberOfCPU; i++) {
+        gameParticipant.push(
+          new Player(PLAYER_COLORS[i], 'Player ' + (i + 1))
+        );
+        k++;
+      }
+      for (let j = 0; j < numberOfCPU; j++) {
+        if (CPUStrength[j] === "medium") {
+          gameParticipant.push(
+            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
+        } else {
+          gameParticipant.push(
+            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
+          );
+        }
+        k++;
+      }
+      commit('setPlayers', gameParticipant);
+
+      // commit('setPlayers', [
+      // new Player(PLAYER_COLORS[0], 'YOU'),
+      // new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
+      // new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
+      // new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
+      // new MediumRandomAIPlayer(PLAYER_COLORS[0], 'Medium 1', 20),
+      // new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 20),
+      // new RandomAIPlayer(PLAYER_COLORS[2], 'Random 2', 20),
+      // new MediumRandomAIPlayer(PLAYER_COLORS[3], 'Medium 2', 20),
+      // ]);
       commit('setReplayState', {
         boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
         usedPiece: [],
@@ -346,6 +393,14 @@ const actions = {
 const getters = {
   numberOfPlayers(state) {
     return state.numberOfPlayers;
+  },
+
+  numberOfCPU(state) {
+    return state.numberOfCPU;
+  },
+
+  CPUStrength(state) {
+    return state.CPUStrength;
   },
 
   timeForEachPlayer(state) {

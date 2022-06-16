@@ -643,22 +643,22 @@ export default Vue.extend({
       event.returnValue = 'check';
     },
   },
-  created() {
-    window.addEventListener('beforeunload', this.confirmSave);
-  },
-  destroyed() {
-    window.removeEventListener('beforeunload', this.confirmSave);
-  },
-  beforeRouteLeave(to, from, next) {
-    if (!this.gameIsOver) {
-      const answer = window.confirm('進行中のゲームを終了しますか？');
-      if (answer) {
-        next();
-      } else {
-        next(false);
-      }
-    } else next();
-  },
+  // created() {
+  //   window.addEventListener('beforeunload', this.confirmSave);
+  // },
+  // destroyed() {
+  //   window.removeEventListener('beforeunload', this.confirmSave);
+  // },
+  // beforeRouteLeave(to, from, next) {
+  //   if (!this.gameIsOver) {
+  //     const answer = window.confirm('進行中のゲームを終了しますか？');
+  //     if (answer) {
+  //       next();
+  //     } else {
+  //       next(false);
+  //     }
+  //   } else next();
+  // },
 });
 </script>
 
