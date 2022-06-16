@@ -269,7 +269,7 @@ export default Vue.extend({
           this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
           this.changePlayerTurn();
         }
-      }, Math.floor(Math.random() * (8000 - 6000)) + 6000);
+      }, Math.floor(Math.random() * (6000 - 4000)) + 4000);
       // }, Math.floor(Math.random() * (500 - 300)) + 300);
     },
 
@@ -787,20 +787,22 @@ export default Vue.extend({
       event.returnValue = 'check';
     },
   },
-  // created() {
-  //   window.addEventListener('beforeunload', this.confirmSave);
-  // },
-  // destroyed() {
-  //   window.removeEventListener('beforeunload', this.confirmSave);
-  // },
-  // beforeRouteLeave(to, from, next) {
-  //   const answer = window.confirm('進行中のゲームを終了しますか？');
-  //   if (answer) {
-  //     next();
-  //   } else {
-  //     next(false);
-  //   }
-  // },
+  created() {
+    window.addEventListener('beforeunload', this.confirmSave);
+  },
+  destroyed() {
+    window.removeEventListener('beforeunload', this.confirmSave);
+  },
+  beforeRouteLeave(to, from, next) {
+    if (!this.gameIsOver) {
+      const answer = window.confirm('進行中のゲームを終了しますか？');
+      if (answer) {
+        next();
+      } else {
+        next(false);
+      }
+    } else next();
+  },
 });
 </script>
 
