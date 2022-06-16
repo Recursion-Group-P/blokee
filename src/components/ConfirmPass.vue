@@ -3,8 +3,8 @@
     <p class="font-size-emphasize">Are you sure you want to PASS?</p>
     <p>Once you passed, you cannot place anymore for the rest of the game.</p>
     <div>
-      <q-btn push color="blue-5 q-mr-sm" label="Yes" @click="pass" />
-      <q-btn push color="grey-7" label="No" @click="hideConfirmPassArea" />
+      <q-btn push color="black q-mr-sm" label="Yes" @click="pass" />
+      <q-btn push color="white" text-color="black" label="No" @click="hideConfirmPassArea" />
     </div>
   </div>
 </template>
