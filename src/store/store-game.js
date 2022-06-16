@@ -25,7 +25,10 @@ const state = {
   currentPlayerId: 0,
   currPiecePoint: 0,
   // players: [new Player(PLAYER_COLORS[0], 'YOU'), new Player(PLAYER_COLORS[1], 'Other')], // local
-  players: [new Player(PLAYER_COLORS[0], 'YOU'), new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 14)],
+  players: [
+    new Player(PLAYER_COLORS[0], 'YOU'),
+    new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 14),
+  ],
   // players: [new Player(PLAYER_COLORS[0], 'YOU'), new MediumRandomAIPlayer(PLAYER_COLORS[1], 'Medium 1', 14)],
   // players: [new Player(PLAYER_COLORS[0], 'YOU'), new GreedyAIPlayer(PLAYER_COLORS[1], 'GREEDY', 14)],
   // players: [
@@ -151,7 +154,10 @@ const mutations = {
 };
 
 const actions = {
-  setGameSettings({ commit }, { numberOfPlayers, timeForEachPlayer, startPosition, numberOfCPU, CPUStrength }) {
+  setGameSettings(
+    { commit },
+    { numberOfPlayers, timeForEachPlayer, startPosition, numberOfCPU, CPUStrength, totalCells }
+  ) {
     if (numberOfPlayers == 2) {
       let startingPositions = null;
       switch (startPosition) {
@@ -173,50 +179,12 @@ const actions = {
       const payload = {
         width: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
         height: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
-        totalCells: 14,
+        totalCells: totalCells,
         cellWidth: window.innerWidth > 1180 ? 35 : window.innerWidth < 768 ? 26 : 30,
         startingPositions,
       };
       commit('setBoardSettings', payload);
 
-      // PC:NPC = 2:0/1:1/0:2
-      let gameParticipant = [];
-      let forReplayPlayer = [];
-      let k = 0;
-      for (let i = 0; i < 2 - numberOfCPU; i++) {
-        gameParticipant.push(
-          new Player(PLAYER_COLORS[i], 'Player ' +(i + 1))
-        );
-        forReplayPlayer.push(
-          new Player(PLAYER_COLORS[i], 'Player ' +(i + 1))
-        );
-        k++;
-      }
-      for (let j = 0; j < numberOfCPU; j++) {
-        if (CPUStrength[j] === "medium") {
-          gameParticipant.push(
-            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-          forReplayPlayer.push(
-            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-        } else {
-          gameParticipant.push(
-            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-          forReplayPlayer.push(
-            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-        }
-        k++;
-      }
-      commit('setPlayers', gameParticipant);
-
-      commit('setReplayState', {
-        boardState: new Array(14).fill(0).map(() => new Array(14).fill(0)),
-        usedPiece: [],
-        players: forReplayPlayer,
-      });
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
       switch (startPosition) {
@@ -242,61 +210,51 @@ const actions = {
       const payload = {
         width: window.innerWidth > 1180 ? 600 : window.innerWidth < 768 ? 380 : 500,
         height: window.innerWidth > 1180 ? 600 : window.innerWidth < 768 ? 380 : 500,
-        totalCells: 20,
+        totalCells: totalCells,
         cellWidth: window.innerWidth > 1180 ? 30 : window.innerWidth < 768 ? 19 : 25,
         startingPositions,
       };
       commit('setBoardSettings', payload);
+    }
 
-      // PC:NPC = 4:0/3:1/2:2/1:3/0:4
-      let gameParticipant = [];
-      let forReplayPlayer = [];
-      let k = 0;
-      for (let i = 0; i < 4 - numberOfCPU; i++) {
+    let gameParticipant = [];
+    let forReplayPlayer = [];
+    
+    const EASY_NAMES = ['BOB 👶', 'MARIA 🐤', 'JOHN 🐇', 'KATE 🧸'].sort(() => Math.random() - 0.5);
+    const MEDIUM_NAMES = ['KWON 😎', 'HIROTADA 😊', 'HIROTO 🌚', 'HAYATO 🌝'].sort(() => Math.random() - 0.5);
+    const HARD_NAMES = ['BILL 👹','STEVE 👺','MARK 🗿','ELON 🦖'].sort(() => Math.random() - 0.5);
+
+    let k = 0;
+    for (let i = 0; i < numberOfPlayers - numberOfCPU; i++) {
+      gameParticipant.push(new Player(PLAYER_COLORS[i], 'Player ' + (i + 1)));
+      forReplayPlayer.push(new Player(PLAYER_COLORS[i], 'Player ' + (i + 1)));
+      k++;
+    }
+    for (let j = 0; j < numberOfCPU; j++) {
+      if (CPUStrength[j] === 'easy') {
         gameParticipant.push(
-          new Player(PLAYER_COLORS[i], 'Player ' + (i + 1))
+          new RandomAIPlayer(PLAYER_COLORS[k], EASY_NAMES[j], totalCells)
         );
         forReplayPlayer.push(
-          new Player(PLAYER_COLORS[i], 'Player ' + (i + 1))
+          new RandomAIPlayer(PLAYER_COLORS[k], EASY_NAMES[j], totalCells)
         );
-        k++;
+      } else if (CPUStrength[j] === 'medium') {
+        gameParticipant.push(new MediumRandomAIPlayer(PLAYER_COLORS[k], MEDIUM_NAMES[j], totalCells));
+        forReplayPlayer.push(new MediumRandomAIPlayer(PLAYER_COLORS[k], MEDIUM_NAMES[j], totalCells));
+      } else {
+        gameParticipant.push(new GreedyAIPlayer(PLAYER_COLORS[k], HARD_NAMES[j], totalCells));
+        forReplayPlayer.push(new GreedyAIPlayer(PLAYER_COLORS[k], HARD_NAMES[j], totalCells));
       }
-      for (let j = 0; j < numberOfCPU; j++) {
-        if (CPUStrength[j] === "medium") {
-          gameParticipant.push(
-            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-          forReplayPlayer.push(
-            new MediumRandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-        } else {
-          gameParticipant.push(
-            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-          forReplayPlayer.push(
-            new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
-          );
-        }
-        k++;
-      }
-      commit('setPlayers', gameParticipant);
-
-      // commit('setPlayers', [
-      // new Player(PLAYER_COLORS[0], 'YOU'),
-      // new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 20),
-      // new RandomAIPlayer(PLAYER_COLORS[2], 'CPU 2', 20),
-      // new RandomAIPlayer(PLAYER_COLORS[3], 'CPU 3', 20),
-      // new MediumRandomAIPlayer(PLAYER_COLORS[0], 'Medium 1', 20),
-      // new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 20),
-      // new RandomAIPlayer(PLAYER_COLORS[2], 'Random 2', 20),
-      // new MediumRandomAIPlayer(PLAYER_COLORS[3], 'Medium 2', 20),
-      // ]);
-      commit('setReplayState', {
-        boardState: new Array(20).fill(0).map(() => new Array(20).fill(0)),
-        usedPiece: [],
-        players: forReplayPlayer,
-      });
+      k++;
     }
+    
+    commit('setPlayers', gameParticipant);
+    commit('setReplayState', {
+      boardState: new Array(totalCells).fill(0).map(() => new Array(totalCells).fill(0)),
+      usedPiece: [],
+      players: forReplayPlayer,
+    });
+
     commit('setGameSettings', {
       currentPlayerId: 0,
       numberOfPlayers: numberOfPlayers,
@@ -389,11 +347,6 @@ const actions = {
         currentPlayerId: 0,
         currPiecePoint: 0,
         players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
-        replay: {
-          boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
-          usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
-          players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
-        },
         gameIsOver: false, // ゲームが終了したかどうか
       };
     }

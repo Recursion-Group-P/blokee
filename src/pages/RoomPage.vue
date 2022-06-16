@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <div class="row items-center justify-evenly" style="width: 100%;">
+    <div class="row items-center justify-evenly" style="width: 100%">
       <div class="col-12 col-sm-3 flex items-center gt-sm">
         <player-area
           :playerId="0"
@@ -126,8 +126,6 @@ export default Vue.extend({
       canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
       canvas.addEventListener('click', (event) => this.handleMouseClick(event));
     }
-    // // player-areaのタイマー開始
-    // this.$refs['player-area-' + this.currentPlayerId].startTimer();
 
     if (this.currPlayer.isAI) {
       this.playAITurn(this.currPlayer);
@@ -240,6 +238,7 @@ export default Vue.extend({
       'resetCurrentPlayer',
       'updateGameIsOver',
       'updatePlayerOutOfGame',
+      'formatState',
     ]),
 
     notifyInvalid() {
@@ -270,8 +269,8 @@ export default Vue.extend({
           this.changePlayerTurn();
           this.$refs[`player-area-${this.currentPlayerId}`].stopTimer();
         }
-      }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
-      // }, Math.floor(Math.random() * (500 - 300)) + 300);
+        // }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
+      }, Math.floor(Math.random() * (500 - 300)) + 300);
     },
 
     changePlayerTurn() {
@@ -302,7 +301,6 @@ export default Vue.extend({
       if (this.gameIsOver) {
         return;
       }
-
 
       this.drawBoard(this.context);
 
@@ -432,6 +430,14 @@ export default Vue.extend({
         pieceCoordsOnBoard,
         this.gameBoard
       );
+
+      // 最後に１マスのピースを置く場合、ボーナス（+5pt）付与
+      let evaluation = new Evaluation(this.players);
+      let lastOnePieceBonus = evaluation.getLastOnePieceBonus(this.currentPlayerId);
+      this.updateCurrentPlayerScore({
+        currentPlayerId: this.currentPlayerId,
+        currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
+      });
     },
 
     // ボードにピースを描画する
@@ -484,12 +490,12 @@ export default Vue.extend({
 
         if (this.isValidMove(currPiece, row, col)) {
           this.placePieceOnBoard(row, col, currPiece);
-          let evaluation = new Evaluation(this.players);
-          let lastOnePieceBonus = evaluation.getLastOnePieceBonus(this.currentPlayerId);
-          this.updateCurrentPlayerScore({
-            currentPlayerId: this.currentPlayerId,
-            currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
-          });
+          // let evaluation = new Evaluation(this.players);
+          // let lastOnePieceBonus = evaluation.getLastOnePieceBonus(this.currentPlayerId);
+          // this.updateCurrentPlayerScore({
+          //   currentPlayerId: this.currentPlayerId,
+          //   currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
+          // });
 
           this.changePlayerTurn();
         } else {
@@ -570,10 +576,10 @@ export default Vue.extend({
                 selectedPieceId: pieceId,
               });
               this.placePieceOnBoard(row, col, currPiece);
-              this.updateCurrentPlayerScore({
-                currentPlayerId: this.currentPlayerId,
-                currPiecePoint: currPiece.length + 1,
-              });
+              // this.updateCurrentPlayerScore({
+              //   currentPlayerId: this.currentPlayerId,
+              //   currPiecePoint: currPiece.length + 1,
+              // });
               return true;
             }
           }
@@ -613,10 +619,10 @@ export default Vue.extend({
                 selectedPieceId: pieceId,
               });
               this.placePieceOnBoard(row, col, currPiece);
-              this.updateCurrentPlayerScore({
-                currentPlayerId: this.currentPlayerId,
-                currPiecePoint: currPiece.length + 1,
-              });
+              // this.updateCurrentPlayerScore({
+              //   currentPlayerId: this.currentPlayerId,
+              //   currPiecePoint: currPiece.length + 1,
+              // });
               return true;
             }
           }
@@ -730,10 +736,10 @@ export default Vue.extend({
           selectedPieceId: selectedPiece.pieceId,
         });
         this.placePieceOnBoard(selectedPiece.row, selectedPiece.col, selectedPiece.currPiece);
-        this.updateCurrentPlayerScore({
-          currentPlayerId: this.currentPlayerId,
-          currPiecePoint: selectedPiece.currPiece.length + 1,
-        });
+        // this.updateCurrentPlayerScore({
+        //   currentPlayerId: this.currentPlayerId,
+        //   currPiecePoint: selectedPiece.currPiece.length + 1,
+        // });
         return true;
       } else {
         // console.log('cannot place piece!');
@@ -797,6 +803,7 @@ export default Vue.extend({
     window.removeEventListener('beforeunload', this.confirmSave);
   },
   beforeRouteLeave(to, from, next) {
+    this.formatState();
     if (!this.gameIsOver) {
       const answer = window.confirm('進行中のゲームを終了しますか？');
       if (answer) {
@@ -804,7 +811,9 @@ export default Vue.extend({
       } else {
         next(false);
       }
-    } else next();
+    } else {
+      next();
+    }
   },
 });
 </script>
@@ -840,6 +849,12 @@ canvas {
 
   .mobile-canvas {
     margin-bottom: 0px;
+  }
+}
+
+@media screen and (min-width: 1100px) {
+  .hide-cards {
+    display: none;
   }
 }
 </style>
