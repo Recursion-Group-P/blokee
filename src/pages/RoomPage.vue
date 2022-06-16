@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <div class="row items-center justify-evenly board-area">
+    <div class="row items-center justify-evenly" style="width: 100%;">
       <div class="col-12 col-sm-3 flex items-center gt-sm">
         <player-area
           :playerId="0"
@@ -643,22 +643,22 @@ export default Vue.extend({
       event.returnValue = 'check';
     },
   },
-  // created() {
-  //   window.addEventListener('beforeunload', this.confirmSave);
-  // },
-  // destroyed() {
-  //   window.removeEventListener('beforeunload', this.confirmSave);
-  // },
-  // beforeRouteLeave(to, from, next) {
-  //   if (!this.gameIsOver) {
-  //     const answer = window.confirm('進行中のゲームを終了しますか？');
-  //     if (answer) {
-  //       next();
-  //     } else {
-  //       next(false);
-  //     }
-  //   } else next();
-  // },
+  created() {
+    window.addEventListener('beforeunload', this.confirmSave);
+  },
+  destroyed() {
+    window.removeEventListener('beforeunload', this.confirmSave);
+  },
+  beforeRouteLeave(to, from, next) {
+    if (!this.gameIsOver) {
+      const answer = window.confirm('進行中のゲームを終了しますか？');
+      if (answer) {
+        next();
+      } else {
+        next(false);
+      }
+    } else next();
+  },
 });
 </script>
 

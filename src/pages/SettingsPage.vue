@@ -11,7 +11,7 @@
             <q-select v-model="numberOfPlayers" :options="numberOfPlayersOptions" label="Number of players" />
             <q-select v-model="numberOfCPU" :options="numberOfCPUOptions[numberOfPlayers]" label="Number of CPU" />
             <div class="row">
-              <div class="q-mr-md col-2" v-for="n of numberOfCPU" :key="n">
+              <div class="q-mr-md col-5 col-sm-2" v-for="n of numberOfCPU" :key="n">
                 <q-select v-model="CPUStrength[n-1]" :options="CPUStrengthOptions" :label="`CPU ` + n" />
               </div>
             </div>

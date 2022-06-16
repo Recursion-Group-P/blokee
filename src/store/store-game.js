@@ -196,6 +196,7 @@ const actions = {
             new RandomAIPlayer(PLAYER_COLORS[k], "CPU " + (j + 1), 14)
           );
         }
+        k++;
       }
       commit('setPlayers', gameParticipant);
 
