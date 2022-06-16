@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <div class="row items-center justify-evenly board-area">
+    <div class="row items-center justify-evenly" style="width: 100%;">
       <div class="col-12 col-sm-3 flex items-center gt-sm">
         <player-area
           :playerId="0"

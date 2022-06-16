@@ -43,6 +43,7 @@ export class Evaluation {
                 // player.score += BONUS_POINTS["usedUpAllPieces"];
             finalResults.push({
                 playerId: index,
+                playerName: player.name,
                 score: player.score,
                 remainingTime: player.remainingTime,
             });
