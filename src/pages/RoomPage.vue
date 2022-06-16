@@ -502,7 +502,7 @@ export default Vue.extend({
 
       if (this.isDragging) {
         let mouseX = event.targetTouches[0].pageX - this.canvas.offsetLeft;
-        let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop - 120;
+        let mouseY = event.targetTouches[0].pageY - this.canvas.offsetTop - 100;
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
         let col = Math.floor(mouseX / cellWidth);
@@ -521,7 +521,7 @@ export default Vue.extend({
 
       if (this.isDragging && this.currPlayerSelectedPieceId !== -1) {
         let mouseX = event.changedTouches[0].pageX - this.canvas.offsetLeft;
-        let mouseY = event.changedTouches[0].pageY - this.canvas.offsetTop - 120;
+        let mouseY = event.changedTouches[0].pageY - this.canvas.offsetTop - 100;
 
         let cellWidth = this.boardSettings.cellWidth;
         let row = Math.floor(mouseY / cellWidth);
@@ -669,7 +669,7 @@ export default Vue.extend({
                 pieceCoordsOnBoard.push([curr_row, curr_col]);
               }
 
-              const currPlayerCornerDiff = ai.getCornerDifference(
+              const myCornerDiff = ai.getCornerDifference(
                 this.currentPlayerId,
                 currPlayerAvailableMoves,
                 pieceCoordsOnBoard,
@@ -692,11 +692,18 @@ export default Vue.extend({
               //   0.5 * currPlayerCornerDiff - 0.6 * opponentCornerDiff + 1 * (currPiece.length + 1);
               const weight =
                 1 * (currPiece.length + 1) +
-                ((currPlayerCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) * 0.6;
+                ((myCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) * 0.6;
 
               weightedPlacements.push([
                 weight,
-                { row, col, pieceId, currPiece: currPiece.map((arr) => arr.slice()) },
+                {
+                  row,
+                  col,
+                  pieceId,
+                  currPiece: currPiece.map((arr) => arr.slice()),
+                  myCornerDiff,
+                  opponentCornerDiff,
+                },
               ]);
             }
 
@@ -815,11 +822,19 @@ canvas {
   pointer-events: none;
 }
 
+.mobile-canvas {
+  margin-bottom: 20px;
+}
+
 @media screen and (min-width: 768px) {
   .room {
     flex-direction: row;
     justify-content: center;
     align-items: center;
+  }
+
+  .mobile-canvas {
+    margin-bottom: 0px;
   }
 }
 </style>

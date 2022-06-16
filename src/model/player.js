@@ -163,7 +163,11 @@ export class GreedyAIPlayer extends AIPlayer {
         let diag_i = curr_row + DIAG_DIR[0];
         let diag_j = curr_col + DIAG_DIR[1];
 
-        if (this.inBounds(diag_i, diag_j) && boardState[diag_i][diag_j] === 0) {
+        if (
+          this.inBounds(diag_i, diag_j) &&
+          boardState[diag_i][diag_j] === 0 &&
+          currPlayerAvailableMoves[diag_i][diag_j] !== 1
+        ) {
           canPlace = true;
           for (const HORIZONTAL_DIR of HORIZONTAL_DIRS) {
             let hori_i = diag_i + HORIZONTAL_DIR[0];
