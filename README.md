@@ -14,6 +14,17 @@ npm install
 quasar dev
 ```
 
+### Start the app in cordova: android
+
+```bash
+quasar dev -m cordova -T android
+```
+
+### Start the app in electron: Mac, Windows
+ 
+```bash
+quasar dev -m electron
+```
 
 ### Lint the files
 ```bash
