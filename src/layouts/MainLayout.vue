@@ -25,7 +25,7 @@
                         <q-item
                             v-if="$q.platform.is.electron"
                             @click="quitApp"
-                            class="absolute-bottom"
+                            class=""
                             clickable
                         >
                             <q-item-section avatar>
