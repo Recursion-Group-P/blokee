@@ -36,10 +36,11 @@
               label="Start position"
             />
             <q-btn
-              class="q-mt-lg"
+              class="q-mt-lg full-width"
               @click="gameStart"
               to="/room"
               unelevated
+              size="lg"
               color="black"
               label="Play"
             />

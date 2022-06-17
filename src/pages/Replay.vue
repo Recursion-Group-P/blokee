@@ -1,35 +1,34 @@
 <template>
-  <div class="row wrap room">
-    <div class="q-pa-sm q-mx-auto lt-md">
+  <q-page class="room">
+    <div class="q-mx-auto lt-md">
       <div class="q-gutter-y-md" style="max-width: 400px">
         <q-tab-panels swipeable v-model="tab" animated style="background-color: #f2f4f7">
-          <q-tab-panel name="0">
+          <q-tab-panel class="q-pa-none q-px-sm" name="0">
             <replay-player-area :playerId="0" />
           </q-tab-panel>
 
-          <q-tab-panel name="1">
+          <q-tab-panel class="q-pa-none q-px-sm" name="1">
             <replay-player-area :playerId="1" />
           </q-tab-panel>
 
-          <q-tab-panel name="2">
+          <q-tab-panel class="q-pa-none q-px-sm" name="2">
             <replay-player-area v-if="numberOfPlayers > 2" :playerId="2" />
           </q-tab-panel>
 
-          <q-tab-panel name="3">
+          <q-tab-panel class="q-pa-none q-px-sm" name="3">
             <replay-player-area v-if="numberOfPlayers > 2" :playerId="3" />
           </q-tab-panel>
         </q-tab-panels>
       </div>
     </div>
 
-    <div class="row items-center justify-evenly board-area">
+    <div class="row items-center justify-evenly" style="width: 100%">
       <div class="col-12 col-sm-3 flex items-center gt-sm">
-        <replay-player-area class="q-mb-md" :playerId="0" style="height: 50%" />
+        <replay-player-area :playerId="0" style="height: 50%" />
         <replay-player-area v-if="numberOfPlayers > 2" :playerId="2" style="height: 50%" />
       </div>
 
-      <!-- board -->
-      <div class="col-12 col-sm-4 text-center">
+      <div class="col-12 col-sm-4 text-center q-pa-sm">
         <div class="full-width row justify-center items-center">
           <canvas
             ref="replayCanvasRef"
@@ -69,11 +68,11 @@
       </div>
 
       <div class="col-12 col-sm-3 flex justify-end gt-sm">
-        <replay-player-area class="q-mb-md" :playerId="1" style="height: 50%" />
+        <replay-player-area :playerId="1" style="height: 50%" />
         <replay-player-area v-if="numberOfPlayers > 2" :playerId="3" style="height: 50%" />
       </div>
     </div>
-  </div>
+  </q-page>
 </template>
 
 <script>
@@ -124,29 +123,25 @@ export default {
 
           // update current player remaining pieces
           this.updateReplayCurrentPlayerRemainingPieces({
-            currentPlayerId: this.currentPlayerId,
-            usedPieceId: this.replay.usedPieces[this.replayIdx],
+            currentPlayerId: this.replay.usedPieces[this.replayIdx].playerId,
+            usedPieceId: this.replay.usedPieces[this.replayIdx].pieceId,
             isUsed: true,
           });
 
-          this.currentPlayerId =
-            this.currentPlayerId + 1 >= this.numberOfPlayers ? 0 : this.currentPlayerId + 1;
-          this.tab = this.currentPlayerId.toString();
+          this.tab = this.replay.usedPieces[this.replayIdx].playerId.toString();
           this.replayIdx++;
         }
       } else {
         if (this.replayIdx > 0) {
           this.pieceSound.play();
-          
+
           this.replayIdx--;
-          this.currentPlayerId =
-            this.currentPlayerId - 1 < 0 ? this.numberOfPlayers - 1 : this.currentPlayerId - 1;
-          this.tab = this.currentPlayerId.toString();
+          this.tab = this.replay.usedPieces[this.replayIdx].playerId.toString();
 
           // update current player remaining pieces
           this.updateReplayCurrentPlayerRemainingPieces({
-            currentPlayerId: this.currentPlayerId,
-            usedPieceId: this.replay.usedPieces[this.replayIdx],
+            currentPlayerId: this.replay.usedPieces[this.replayIdx].playerId,
+            usedPieceId: this.replay.usedPieces[this.replayIdx].pieceId,
             isUsed: false,
           });
         }
@@ -216,19 +211,18 @@ export default {
 
 <style>
 .room {
-  position: relative;
+  height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
-.board {
-  position: absolute;
-  top: 5%;
-  left: 28%;
-}
-.board-area {
-  width: 100%;
-}
-@media screen and (min-width: 1023px) {
-  .board-area {
-    height: calc(100vh - 50px);
+
+@media screen and (min-width: 768px) {
+  .room {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
 }
 </style>

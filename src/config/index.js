@@ -15,5 +15,5 @@ export const Config = {
         { label: "20 min", value: 1200 },
     ],
     startPosition: "Corner",
-    startPositionOptions: ["Center", "Corner", "Anywhere"],
+    startPositionOptions: ["Center", "Corner"],
 };

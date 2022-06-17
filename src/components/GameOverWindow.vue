@@ -1,15 +1,12 @@
 <template>
-  <q-card class="q-pa-md" style="width: 60vw">
-    <q-card-section class="text-center q-pb-none">
-      <div class="text-h3 text-center">Game Over</div>
-    </q-card-section>
-    <q-card-section>
-      <div class="text-center bg-grey-2 rounded-borders q-pa-lg">
+  <q-card style="width: 700px; max-width: 100vw" class="q-pa-sm">
+    <q-card-section class="q-pa-sm">
+      <div class="text-center bg-grey-2 rounded-borders q-pa-md">
         <div class="row">
           <div class="col-1"></div>
-          <div class="col"></div>
-          <div class="col">Total Score</div>
-          <div class="col">Time Left</div>
+          <div class="col-7 col-5-md"></div>
+          <div class="col-1 col-3-md">Score</div>
+          <div class="col-3 col-3-md">Time</div>
         </div>
         <div
           v-for="(result, index) in finalResults"
@@ -22,12 +19,14 @@
               class="rank-badge text-white shadow-1"
               :style="`background-color: ${playerColor[result.playerId]};`"
             >
-              {{ index + 1 }}
+              <p class="rank-badge-text">
+                {{ index + 1 }}
+              </p>
             </div>
           </div>
-          <div class="col">{{ result.playerName }}</div>
-          <div class="col">{{ result.score + result.usedUpAllPiecesBonus }}</div>
-          <div class="col">{{ formatTime(result.remainingTime) }}</div>
+          <div class="col-7 col-5-md">{{ result.playerName }}</div>
+          <div class="col-1 col-3-md">{{ result.score }}</div>
+          <div class="col-3 col-3-md">{{ formatTime(result.remainingTime) }}</div>
         </div>
       </div>
     </q-card-section>
@@ -49,9 +48,7 @@
         >
       </div> -->
       <div class="full-width text-center q-mb-sm">
-        <q-btn rounded color="dark" class="q-px-md" to="/settings"
-          >Go to settings page</q-btn
-        >
+        <q-btn rounded color="dark" class="q-px-md" to="/settings">Go to settings page</q-btn>
       </div>
       <div class="full-width text-center">
         <q-btn flat round color="dark" icon="home" to="/"></q-btn>
@@ -61,10 +58,10 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
-import { PLAYER_COLORS } from "src/constants";
-import { Evaluation } from "src/model/evaluation";
-import Vue from "vue";
+import { mapGetters, mapActions } from 'vuex';
+import { PLAYER_COLORS } from 'src/constants';
+import { Evaluation } from 'src/model/evaluation';
+import Vue from 'vue';
 
 export default Vue.extend({
   data() {
@@ -75,12 +72,7 @@ export default Vue.extend({
   },
 
   computed: {
-    ...mapGetters("game", [
-      "numberOfPlayers",
-      "timeForEachPlayer",
-      "startPosition",
-      "players",
-    ]),
+    ...mapGetters('game', ['numberOfPlayers', 'timeForEachPlayer', 'startPosition', 'players']),
 
     finalResults() {
       return new Evaluation(this.players).getFinalResults();
@@ -88,7 +80,7 @@ export default Vue.extend({
   },
 
   methods: {
-    ...mapActions("game", ["formatState", "setGameSettings"]),
+    ...mapActions('game', ['formatState', 'setGameSettings']),
     // newGameWithSameSettings() {
     //   // 今のsettings情報を退避
     //   const currentSettings = {
@@ -107,7 +99,7 @@ export default Vue.extend({
     // },
     formatTime(remainingTime) {
       let min = Math.floor(remainingTime / 60);
-      let sec = ("00" + (remainingTime % 60)).slice(-2);
+      let sec = ('00' + (remainingTime % 60)).slice(-2);
       let formatTime = `${min}:${sec}`;
       return formatTime;
     },
@@ -117,8 +109,29 @@ export default Vue.extend({
 
 <style>
 .rank-badge {
-  height: 45px;
-  width: 45px;
+  margin-top: 5px;
+  height: 30px;
+  width: 30px;
   border-radius: 50%;
+}
+
+.rank-badge-text {
+  position: relative;
+  top: -20%;
+  left: 1%;
+}
+
+@media screen and (min-width: 786px) {
+  .rank-badge {
+    position: relative;
+    bottom: 5px;
+    height: 45px;
+    width: 45px;
+  }
+
+  .rank-badge-text {
+    position: relative;
+    top: 5%;
+  }
 }
 </style>
