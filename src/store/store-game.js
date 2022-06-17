@@ -4,16 +4,14 @@ import { Platform } from 'quasar';
 import { Evaluation } from 'src/model/evaluation';
 
 const EASY_NAMES = ['BOB 👶', 'MARIA 🐤', 'JOHN 🐇', 'KATE 🧸'].sort(() => Math.random() - 0.5);
-const MEDIUM_NAMES = ['KWON 😎', 'HIROTADA 😊', 'HIROTO 🌚', 'HAYATO 🌝'].sort(
+const MEDIUM_NAMES = ['HIROTADA 😊', 'HIROTO 🌚', 'HAYATO 🌝'].sort(
   () => Math.random() - 0.5
 );
 const HARD_NAMES = [
-  'BILL GATES 👹',
-  'STEVE JOBS 👺',
-  'ELON MUSK 🦖',
-  'JEFF BEZOS 👽',
-  'JEFFRY 👿',
-  'SHINYA 🦁',
+  'BILL 👹',
+  'STEVE 👺',
+  'ELON 🦖',
+  'JEFF 👽',
 ].sort(() => Math.random() - 0.5);
 
 const state = {
