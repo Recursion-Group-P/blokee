@@ -23,12 +23,12 @@
     </div>
 
     <div class="row items-center justify-evenly" style="width: 100%">
-      <div class="col-12 col-sm-3 flex items-center gt-sm">
+      <div class="col-sm-3 flex items-center gt-sm">
         <replay-player-area :playerId="0" style="height: 50%" />
         <replay-player-area v-if="numberOfPlayers > 2" :playerId="2" style="height: 50%" />
       </div>
 
-      <div class="col-12 col-sm-4 text-center q-pa-sm">
+      <div class="col-12 col-sm-8 col-md-4 text-center q-pa-sm">
         <div class="full-width row justify-center items-center">
           <canvas
             ref="replayCanvasRef"
@@ -67,7 +67,7 @@
         </div>
       </div>
 
-      <div class="col-12 col-sm-3 flex justify-end gt-sm">
+      <div class="col-sm-3 flex justify-end gt-sm">
         <replay-player-area :playerId="1" style="height: 50%" />
         <replay-player-area v-if="numberOfPlayers > 2" :playerId="3" style="height: 50%" />
       </div>
