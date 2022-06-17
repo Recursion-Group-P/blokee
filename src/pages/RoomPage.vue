@@ -283,6 +283,16 @@ export default Vue.extend({
         this.updateCurrentPlayerRemainingPieces({
           currentPlayerId: this.currentPlayerId,
         });
+
+        // 全てのピースのisUsedがtrueになったらoutOfGameをtrueに更新
+        let evaluation = new Evaluation(this.players);
+        let ifUsedUpAllPieces = evaluation.checkIfUsedUpAllPieces(
+          this.players[this.currentPlayerId].remainingPieces
+        );
+        if (ifUsedUpAllPieces) {
+          this.updatePlayerOutOfGame({ currentPlayerId: this.currentPlayerId });
+          this.$refs[`player-area-${this.currentPlayerId}`].stopTimer();
+        }
       }
 
       // reset player selected piece to -1
