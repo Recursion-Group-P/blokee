@@ -47,7 +47,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      height: Platform.is.desktop ? 250 : 150,
+      height: Platform.is.desktop ? 200 : 150,
       cellSize: 30,
       pieceCoordinate: null,
     };

@@ -6,7 +6,7 @@
 
     <div class="q-mx-auto lt-md">
       <div class="q-gutter-y-md" style="max-width: 400px">
-        <q-tab-panels swipeable v-model="tab" animated style="background-color: #f2f4f7">
+        <q-tab-panels keep-alive swipeable v-model="tab" animated style="background-color: #f2f4f7">
           <q-tab-panel class="q-pa-none q-px-sm" name="0">
             <player-area
               :playerId="0"
@@ -144,6 +144,7 @@ export default Vue.extend({
       showModal: false,
       roomPageKey: 0,
       timeoutId: null,
+      prevPieceCoords: null,
     };
   },
 
@@ -269,15 +270,15 @@ export default Vue.extend({
           this.changePlayerTurn();
           this.$refs[`player-area-${this.currentPlayerId}`].stopTimer();
         }
-        // }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
-      }, Math.floor(Math.random() * (500 - 300)) + 300);
+      }, Math.floor(Math.random() * (5000 - 3000)) + 3000);
+      // }, Math.floor(Math.random() * (500 - 300)) + 300);
     },
 
     changePlayerTurn() {
       if (this.players[this.currentPlayerId].outOfGame === false) {
         this.addReplayState({
           boardState: this.gameBoard.map((arr) => arr.slice()),
-          usedPiece: this.currPlayerSelectedPieceId,
+          usedPiece: { playerId: this.currentPlayerId, pieceId: this.currPlayerSelectedPieceId },
         });
 
         this.updateCurrentPlayerRemainingPieces({
@@ -422,6 +423,7 @@ export default Vue.extend({
         this.gameBoard[curr_row][curr_col] = this.currentPlayerId + 1;
         pieceCoordsOnBoard.push([curr_row, curr_col]);
       }
+      this.prevPieceCoords = pieceCoordsOnBoard;
 
       // update current player available moves
       const currPlayerAvailableMoves = this.availablePlayerMoves[this.currentPlayerId];
@@ -693,15 +695,9 @@ export default Vue.extend({
                 );
               }
 
-              // console.log(
-              //   `my corner diff: ${currPlayerCornerDiff}, opponents corner diff: ${opponentCornerDiff}`
-              // );
-
-              // const weight =
-              //   0.5 * currPlayerCornerDiff - 0.6 * opponentCornerDiff + 1 * (currPiece.length + 1);
               const weight =
                 1 * (currPiece.length + 1) +
-                ((myCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) * 0.6;
+                ((0.8 * myCornerDiff - opponentCornerDiff) / opponentAvailableMoves.length) * 0.6;
 
               weightedPlacements.push([
                 weight,
@@ -727,22 +723,15 @@ export default Vue.extend({
         }
       }
       const selectedPiece = weightedPlacements.sort((a, b) => b[0] - a[0])[0][1]; // row, col, pieceId, rots
-      // console.log('weighted placements: ', weightedPlacements);
 
       if (selectedPiece) {
-        // console.log(selectedPiece);
         this.setCurrentPlayerSelectedPieceId({
           currentPlayerId: this.currentPlayerId,
           selectedPieceId: selectedPiece.pieceId,
         });
         this.placePieceOnBoard(selectedPiece.row, selectedPiece.col, selectedPiece.currPiece);
-        // this.updateCurrentPlayerScore({
-        //   currentPlayerId: this.currentPlayerId,
-        //   currPiecePoint: selectedPiece.currPiece.length + 1,
-        // });
         return true;
       } else {
-        // console.log('cannot place piece!');
         return false;
       }
     },
@@ -790,27 +779,60 @@ export default Vue.extend({
           );
         }
       }
+
+      if (this.prevPieceCoords) {
+        for (const coord of this.prevPieceCoords) {
+          const [row, col] = coord;
+          context.strokeWidth = 0.1;
+          context.strokeStyle = '#666666';
+          context.strokeRect(
+            col * this.boardSettings.cellWidth,
+            row * this.boardSettings.cellWidth,
+            this.boardSettings.cellWidth,
+            this.boardSettings.cellWidth
+          );
+        }
+      }
+      this.prevPieceCoords = null;
     },
 
     confirmSave(event) {
       event.returnValue = 'check';
     },
   },
+
   created() {
     window.addEventListener('beforeunload', this.confirmSave);
   },
+
   destroyed() {
     window.removeEventListener('beforeunload', this.confirmSave);
   },
+
   beforeRouteLeave(to, from, next) {
-    this.formatState();
     if (!this.gameIsOver) {
-      const answer = window.confirm('進行中のゲームを終了しますか？');
-      if (answer) {
-        next();
-      } else {
-        next(false);
-      }
+      this.$q
+        .dialog({
+          message: '進行中のゲームを終了しますか？',
+          cancel: true,
+          persistent: true,
+          ok: {
+            push: true,
+            color: 'black',
+          },
+          cancel: {
+            push: true,
+            'text-color': 'black',
+            color: 'white',
+          },
+        })
+        .onOk(() => {
+          this.formatState();
+          next();
+        })
+        .onCancel(() => {
+          next(false);
+        });
     } else {
       next();
     }
@@ -849,12 +871,6 @@ canvas {
 
   .mobile-canvas {
     margin-bottom: 0px;
-  }
-}
-
-@media screen and (min-width: 1100px) {
-  .hide-cards {
-    display: none;
   }
 }
 </style>

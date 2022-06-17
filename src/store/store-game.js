@@ -3,6 +3,19 @@ import { PLAYER_COLORS } from 'src/constants';
 import { Platform } from 'quasar';
 import { Evaluation } from 'src/model/evaluation';
 
+const EASY_NAMES = ['BOB 👶', 'MARIA 🐤', 'JOHN 🐇', 'KATE 🧸'].sort(() => Math.random() - 0.5);
+const MEDIUM_NAMES = ['KWON 😎', 'HIROTADA 😊', 'HIROTO 🌚', 'HAYATO 🌝'].sort(
+  () => Math.random() - 0.5
+);
+const HARD_NAMES = [
+  'BILL GATES 👹',
+  'STEVE JOBS 👺',
+  'ELON MUSK 🦖',
+  'JEFF BEZOS 👽',
+  'JEFFRY 👿',
+  'SHINYA 🦁',
+].sort(() => Math.random() - 0.5);
+
 const state = {
   numberOfPlayers: 2,
   numberOfCPU: 0,
@@ -24,23 +37,16 @@ const state = {
   },
   currentPlayerId: 0,
   currPiecePoint: 0,
-  // players: [new Player(PLAYER_COLORS[0], 'YOU'), new Player(PLAYER_COLORS[1], 'Other')], // local
   players: [
-    new Player(PLAYER_COLORS[0], 'YOU'),
-    new RandomAIPlayer(PLAYER_COLORS[1], 'Random 1', 14),
+    new Player(PLAYER_COLORS[0], 'Player 1'),
+    new GreedyAIPlayer(PLAYER_COLORS[1], HARD_NAMES[0], 14),
   ],
-  // players: [new Player(PLAYER_COLORS[0], 'YOU'), new MediumRandomAIPlayer(PLAYER_COLORS[1], 'Medium 1', 14)],
-  // players: [new Player(PLAYER_COLORS[0], 'YOU'), new GreedyAIPlayer(PLAYER_COLORS[1], 'GREEDY', 14)],
-  // players: [
-  //   new MediumRandomAIPlayer(PLAYER_COLORS[0], 'CPU 1', 14),
-  //   new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 2', 14),
-  // ], // CPU VS CPU
   replay: {
     boardStates: [new Array(14).fill(0).map(() => new Array(14).fill(0))],
-    usedPieces: [], // usedPieces[i] = used piece index for that player turn, where i = ith turn
+    usedPieces: [], // usedPieces[i] = { playerId, usedPieceId }
     players: [
-      new Player(PLAYER_COLORS[0], 'YOU'),
-      new RandomAIPlayer(PLAYER_COLORS[1], 'CPU 1', 14),
+      new Player(PLAYER_COLORS[0], 'Player 1'),
+      new GreedyAIPlayer(PLAYER_COLORS[1], HARD_NAMES[0], 14),
     ],
   },
   gameIsOver: false, // ゲームが終了したかどうか
@@ -147,8 +153,6 @@ const mutations = {
   },
 
   recordRemainingTime(state, payload) {
-    // console.log(state.players[payload.currentPlayerId].name);
-    // console.log(payload.remainingTime);
     state.players[payload.currentPlayerId].remainingTime = payload.remainingTime;
   },
 };
@@ -170,8 +174,8 @@ const actions = {
 
         case 'Center':
           startingPositions = [
-            [6, 6],
-            [7, 7],
+            [4, 4],
+            [9, 9],
           ];
           break;
       }
@@ -184,7 +188,6 @@ const actions = {
         startingPositions,
       };
       commit('setBoardSettings', payload);
-
     } else if (numberOfPlayers == 4) {
       let startingPositions = null;
       switch (startPosition) {
@@ -199,10 +202,10 @@ const actions = {
 
         case 'Center':
           startingPositions = [
-            [9, 9],
-            [9, 10],
-            [10, 9],
-            [10, 10],
+            [7, 7],
+            [7, 12],
+            [12, 7],
+            [12, 12],
           ];
           break;
       }
@@ -219,10 +222,10 @@ const actions = {
 
     let gameParticipant = [];
     let forReplayPlayer = [];
-    
-    const EASY_NAMES = ['BOB 👶', 'MARIA 🐤', 'JOHN 🐇', 'KATE 🧸'].sort(() => Math.random() - 0.5);
-    const MEDIUM_NAMES = ['KWON 😎', 'HIROTADA 😊', 'HIROTO 🌚', 'HAYATO 🌝'].sort(() => Math.random() - 0.5);
-    const HARD_NAMES = ['BILL 👹','STEVE 👺','MARK 🗿','ELON 🦖'].sort(() => Math.random() - 0.5);
+
+    EASY_NAMES.sort(() => Math.random() - 0.5);
+    MEDIUM_NAMES.sort(() => Math.random() - 0.5);
+    HARD_NAMES.sort(() => Math.random() - 0.5);
 
     let k = 0;
     for (let i = 0; i < numberOfPlayers - numberOfCPU; i++) {
@@ -232,22 +235,22 @@ const actions = {
     }
     for (let j = 0; j < numberOfCPU; j++) {
       if (CPUStrength[j] === 'easy') {
+        gameParticipant.push(new RandomAIPlayer(PLAYER_COLORS[k], EASY_NAMES[j], totalCells));
+        forReplayPlayer.push(new RandomAIPlayer(PLAYER_COLORS[k], EASY_NAMES[j], totalCells));
+      } else if (CPUStrength[j] === 'medium') {
         gameParticipant.push(
-          new RandomAIPlayer(PLAYER_COLORS[k], EASY_NAMES[j], totalCells)
+          new MediumRandomAIPlayer(PLAYER_COLORS[k], MEDIUM_NAMES[j], totalCells)
         );
         forReplayPlayer.push(
-          new RandomAIPlayer(PLAYER_COLORS[k], EASY_NAMES[j], totalCells)
+          new MediumRandomAIPlayer(PLAYER_COLORS[k], MEDIUM_NAMES[j], totalCells)
         );
-      } else if (CPUStrength[j] === 'medium') {
-        gameParticipant.push(new MediumRandomAIPlayer(PLAYER_COLORS[k], MEDIUM_NAMES[j], totalCells));
-        forReplayPlayer.push(new MediumRandomAIPlayer(PLAYER_COLORS[k], MEDIUM_NAMES[j], totalCells));
       } else {
         gameParticipant.push(new GreedyAIPlayer(PLAYER_COLORS[k], HARD_NAMES[j], totalCells));
         forReplayPlayer.push(new GreedyAIPlayer(PLAYER_COLORS[k], HARD_NAMES[j], totalCells));
       }
       k++;
     }
-    
+
     commit('setPlayers', gameParticipant);
     commit('setReplayState', {
       boardState: new Array(totalCells).fill(0).map(() => new Array(totalCells).fill(0)),
@@ -332,13 +335,18 @@ const actions = {
     function getDefaultState() {
       return {
         numberOfPlayers: 2,
+        numberOfCPU: 0,
+        CPUStrength: [],
         timeForEachPlayer: 600, // 600 = 10mins
         startPosition: 'Corner', // ["Center", "Corner", "Anywhere"]
         boardSettings: {
-          width: Platform.is.desktop ? 490 : 350,
-          height: Platform.is.desktop ? 490 : 350,
+          // window.innerWidth > 1180 -> laptop
+          // window.innerWidth < 768 -> mobile
+          // else -> tablet
+          width: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
+          height: window.innerWidth > 1180 ? 490 : window.innerWidth < 768 ? 364 : 420,
           totalCells: 14,
-          cellWidth: Platform.is.desktop ? 35 : 25,
+          cellWidth: window.innerWidth > 1180 ? 35 : window.innerWidth < 768 ? 26 : 30,
           startingPositions: [
             [0, 0],
             [13, 13],
@@ -346,7 +354,10 @@ const actions = {
         },
         currentPlayerId: 0,
         currPiecePoint: 0,
-        players: [new Player(PLAYER_COLORS[0]), new Player(PLAYER_COLORS[1])],
+        players: [
+          new Player(PLAYER_COLORS[0], 'Player 1'),
+          new GreedyAIPlayer(PLAYER_COLORS[1], HARD_NAMES[0], 14),
+        ],
         gameIsOver: false, // ゲームが終了したかどうか
       };
     }
