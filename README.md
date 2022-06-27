@@ -6,7 +6,7 @@
 
 <h3 align="center">The board game "Blokus" built on top of <a href="https://quasar.dev/" target="_blank">Quasar</a>.</h3>
 <p align="center">
-  <a href='https://play.google.com/store/apps/details?id=org.groupP.blockee.app&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/ja/badges/static/images/badges/en_badge_web_generic.png' **height**="60px"/></a>
+  <a href='https://play.google.com/store/apps/details?id=org.groupP.blockee.app&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/ja/badges/static/images/badges/en_badge_web_generic.png' height="60px"/></a>
 </p>
 <br />
 
@@ -45,9 +45,13 @@ $$ w_i = size_i \cdot W_0 + \frac{\sum(cor_{my} - cor_{opp})}{n_{opp}} \cdot W_1
 </p>
 
 $$ w_i = \text{weight of piece } i $$
+
 $$ size_i = \text{size (length) of piece } i $$
+
 $$ cor_{my} = \text{number of corners for current player} $$
+
 $$ cor_{opp} = \text{number of corners for opponent players} $$
+
 $$ n_{opp} = \text{number of opponents} $$
 
 ## How to run
