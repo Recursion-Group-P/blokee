@@ -5,6 +5,7 @@
 </h1>
 
 <h3 align="center">The board game "Blokus" built on top of <a href="https://quasar.dev/" target="_blank">Quasar</a>.</h3>
+<p align="center">https://blockee.netlify.app</p>
 <p align="center">
   <a href='https://play.google.com/store/apps/details?id=org.groupP.blockee.app&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/ja/badges/static/images/badges/en_badge_web_generic.png' height="60px"/></a>
 </p>
