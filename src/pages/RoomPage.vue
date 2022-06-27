@@ -504,13 +504,6 @@ export default Vue.extend({
 
         if (this.isValidMove(currPiece, row, col)) {
           this.placePieceOnBoard(row, col, currPiece);
-          // let evaluation = new Evaluation(this.players);
-          // let lastOnePieceBonus = evaluation.getLastOnePieceBonus(this.currentPlayerId);
-          // this.updateCurrentPlayerScore({
-          //   currentPlayerId: this.currentPlayerId,
-          //   currPiecePoint: currPiece.length + 1 + lastOnePieceBonus,
-          // });
-
           this.changePlayerTurn();
         } else {
           this.notifyInvalid();
@@ -557,10 +550,6 @@ export default Vue.extend({
         if (this.isValidMove(currPiece, row, col)) {
           // place center piece
           this.placePieceOnBoard(row, col, currPiece);
-          this.updateCurrentPlayerScore({
-            currentPlayerId: this.currentPlayerId,
-            currPiecePoint: currPiece.length + 1,
-          });
           this.changePlayerTurn();
         } else {
           this.notifyInvalid();
@@ -594,10 +583,6 @@ export default Vue.extend({
                 selectedPieceId: pieceId,
               });
               this.placePieceOnBoard(row, col, currPiece);
-              // this.updateCurrentPlayerScore({
-              //   currentPlayerId: this.currentPlayerId,
-              //   currPiecePoint: currPiece.length + 1,
-              // });
               return true;
             }
           }
@@ -639,10 +624,6 @@ export default Vue.extend({
                 selectedPieceId: pieceId,
               });
               this.placePieceOnBoard(row, col, currPiece);
-              // this.updateCurrentPlayerScore({
-              //   currentPlayerId: this.currentPlayerId,
-              //   currPiecePoint: currPiece.length + 1,
-              // });
               return true;
             }
           }
@@ -669,7 +650,7 @@ export default Vue.extend({
         this.gameBoard
       );
 
-      // console.log(possibleMoves);
+      console.log('AI possible moves: ', possibleMoves);
 
       const opponentAvailableMoves = this.availablePlayerMoves.filter((arr, idx) => {
         if (idx !== this.currentPlayerId) {
@@ -742,6 +723,7 @@ export default Vue.extend({
           }
         }
       }
+      console.log('AI weighted placements: ', weightedPlacements)
       const selectedPiece = weightedPlacements.sort((a, b) => b[0] - a[0])[0][1]; // row, col, pieceId, rots
 
       if (selectedPiece) {
